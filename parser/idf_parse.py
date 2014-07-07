@@ -1,168 +1,39 @@
 from __future__ import division    
 
+#--- Config
 from config import *
-import logging.config
-import unittest
-from utility_inspect import whoami, whosdaddy, listObject
 
+#--- Standard
 import re
-from lxml import etree
 import logging.config
 import copy
 from collections import defaultdict # Python 2.7 has a better 'Counter'
-from parser.utilities import genID, idStr
-from win32com.client import Dispatch
-import os
-import csv
-from utility_path import split_up_path, get_files_by_ext_recurse
-
-from UtilityPrintTable import PrettyTable
+#from win32com.client import Dispatch
+#import os
+#import csv
 from copy import deepcopy
-import json as json
+#import json as json
+#import random as random
 import pprint as pprint
-import random as random
 pp = pprint.PrettyPrinter(indent=4)
 pPrint = pp.pprint
 
+#--- Utilities
+from utility_path import split_up_path, get_files_by_ext_recurse
+from parser.utilities import genID, idStr
+from UtilityPrintTable import PrettyTable
 from utility_excel import ExcelBookRead
 from UtilityXML import printXML
 from parser.utilities import loggerCritical
 
+#--- Internal
 
-#from ProjectScripts.generate_variants import *
-
-keptClassesDict =  {
-        'MoreClassesTEMP' : set([
-                          # Geometry ##################
-                          'Zone',                          
-                          'BuildingSurface:Detailed',                            
-                          'FenestrationSurface:Detailed',
-                          'GlobalGeometryRules',
-                          'Shading:Building:Detailed',
-
-                          # Loads ######################
-                          'People',
-                          'ElectricEquipment',          
-                          'Lights',
-                          'Schedule:Compact',
-                          'ZoneInfiltration:DesignFlowRate',
-                          'ScheduleTypeLimits',
-                                          
-                           # Materials ##################
-                          'Material:AirGap',
-                          'Material:InfraredTransparent',
-                          'WindowMaterial:Gas', 
-                          'Material:NoMass',
-                          'Material',
-                          'Construction',
-                          'WindowMaterial:SimpleGlazingSystem',
-                          'WindowMaterial:Glazing',
-                          ]),
-                          
-        'onlyGeometry' : set([
-                          # Geometry ##################
-                          'Zone',                          
-                          'BuildingSurface:Detailed',                            
-                          'FenestrationSurface:Detailed',
-                          'Shading:Building:Detailed',
-                          ]),      
-        'noHVAC': set([   
-                          # Control ##################
-                          'Version',
-                          'SimulationControl',
-                          'Building',
-                          'ShadowCalculation',
-                          'Site:Location',
-                          'SizingPeriod:DesignDay',
-                          'RunPeriod',
-                          'RunPeriodControl:DaylightSavingTime',
-                          'Site:GroundTemperature:BuildingSurface',
-                          'Site:GroundTemperature:BuildingSurface',
-                          'Site:GroundTemperature:Deep',
-                          'Site:GroundTemperature:Shallow',
-                          'Site:GroundReflectance',
-                          'Site:GroundReflectance:SnowModifier',                          
-                          
-                          # Schedules #################
-                          'ScheduleTypeLimits',
-                          'Schedule:Day:Hourly',
-                          'Schedule:Week:Daily',
-                          'Schedule:Compact',
-               
-                           # Surface Construction Elements ##################
-                          'Material',
-                          'Material:NoMass',
-                          'Material:InfraredTransparent',
-                          'Material:AirGap',
-                          'WindowMaterial:Glazing',
-                          'WindowMaterial:Gas', 
-                          'WindowMaterial:SimpleGlazingSystem',
-                          'WindowMaterial:Shade',
-                          'MaterialProperty:GlazingSpectralData',
-                          'Construction',
-                          
-                          # Surfaces
-                          'Zone',
-                          'BuildingSurface:Detailed',                            
-                          'FenestrationSurface:Detailed',
-                          'GlobalGeometryRules',
-                          'WindowProperty:ShadingControl',
-                          'WindowProperty:FrameAndDivider',
-                          'Shading:Building:Detailed',
-                          
-                          # Advaced Surfaces
-                          'SurfaceProperty:OtherSideCoefficients',
-                          
-                          # Loads ######################
-                          'People',
-                          'Lights',
-                          'ElectricEquipment',          
-                          'ZoneInfiltration:DesignFlowRate',
-                        
-                          # Daylighting
-                          'Daylighting:Controls',
-                          'OutputControl:IlluminanceMap:Style'
-                          
-                          # Zone Airflow
-                          #'ZoneInfiltration:DesignFlowRate',
-                          
-                          # HVAC Design Objects
-                          #'DesignSpecification:OutdoorAir',
-                          #'DesignSpecification:ZoneAirDistribution',
-                          #'Sizing:Zone',
-                          'Sizing:System',
-                          'Sizing:Plant',
-                          
-                          # Zone HVAC Controls and Thermostats
-                          #'ZoneControl:Humidistat',
-                          #'ZoneControl:Thermostat',
-                          #'ZoneControl:Thermostat:OperativeTemperature',
-                          #'ThermostatSetpoint:DualSetpoint',
-                          
-                          
-                          # HVAC
-                          #'ZoneHVAC:EquipmentConnections',
-                          
-                          ]),  
-        'geometryAndSpaceLoads' : set([
-                          # Geometry ##################
-                          'Zone',                          
-                          'BuildingSurface:Detailed',                            
-                          'FenestrationSurface:Detailed',
-                          'Shading:Building:Detailed',
-                          'ZoneInfiltration:DesignFlowRate',
-                          'ElectricEquipment',
-                          'Lights',
-                          'People',
-                          'ZoneList',
-                          'ScheduleTypeLimits',
-                          'Schedule:Day:Interval',
-                          'Schedule:Week:Daily',
-                          'Schedule:Year',
-                          ]),                          
+#--- Third party
+from lxml import etree
 
 
-}
+
+
 
 #--- Manipulate Objects / CONFIRMED
 def merge_xml(objectA, objectB):
@@ -249,8 +120,6 @@ def root_node():
     commentXML = etree.Comment("Schema created April. 2011 by Marcus Jones")
     currentXML.append(commentXML)
     return currentXML
-
-
     
 def tree_get_class(IDFtree, classNameRegex, flgExact = True):
     """Returns a list of XML OBJECT nodes according to search of class name
@@ -267,7 +136,6 @@ def tree_get_class(IDFtree, classNameRegex, flgExact = True):
     
     return queryElements
     
-
 def xpathRE(tree, strXpath):
     """
     This function is just an alias for the etree.xpath function,
@@ -276,10 +144,11 @@ def xpathRE(tree, strXpath):
     return tree.xpath(strXpath, 
         namespaces={"re": "http://exslt.org/regular-expressions"})
 
-
 #--- Introspection 
 
-def idfGetZoneNameList(IDFobj, zoneName='.'):
+def get_zone_name_list(IDFobj, zoneName='.'):
+    """
+    """
     with loggerCritical():
         zoneElements = tree_get_class(IDFobj.XML, "^Zone$")
     
@@ -293,7 +162,7 @@ def idfGetZoneNameList(IDFobj, zoneName='.'):
     
     return filteredNameList
 
-def printStdTable(rows):
+def print_table(rows):
     headers = rows.pop(0)
     alignments = rows.pop(0)
     alignments = zip(headers, alignments)
@@ -306,7 +175,7 @@ def printStdTable(rows):
         
     print theTable
     
-def getAllObjectsTable(IDFobj):
+def get_table_all_names(IDFobj):
     """Lists all objects, and their names (first ATTR)
     """
     objects = IDFobj.XML.xpath('//OBJECT')
@@ -322,7 +191,7 @@ def getAllObjectsTable(IDFobj):
 
     return tableHeader + tableAlign + sorted(tableRows)
 
-def getObjectCountTable(IDFobj):
+def get_table_object_count(IDFobj):
 
     names = IDFobj.XML.xpath('//CLASS')
     
@@ -347,7 +216,7 @@ def getObjectCountTable(IDFobj):
 
 
 #--- Assembly
-def applyDefaultConstNames(IDFobj, IDDobj):
+def apply_default_construction_names(IDFobj, IDDobj):
     
     
     xpathSearch = r"OBJECT/CLASS[text() = 'BuildingSurface:Detailed']/.."
@@ -402,7 +271,7 @@ def applyDefaultConstNames(IDFobj, IDDobj):
 
     #pass
 
-def applyChange(IDFobj, IDDobj, change):
+def apply_change(IDFobj, IDDobj, change):
     
     with loggerCritical():
         targetSelection = tree_get_class(IDDobj.XML, change['class'], True)
@@ -410,7 +279,7 @@ def applyChange(IDFobj, IDDobj, change):
     assert targetSelection
     
     with loggerCritical():
-        position = IDDgetMatchedPosition(targetSelection[0],"field",change['attr'])
+        position = get_IDD_matched_position(targetSelection[0],"field",change['attr'])
         
     assert position
     
@@ -479,7 +348,7 @@ def applyChange(IDFobj, IDDobj, change):
     return IDFobj
 
 
-def applyTemplate(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No name", uniqueName = None):
+def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No name", uniqueName = None):
     """ Template is a regular IDF object
     """
     logging.debug(idStr("Processing template *** {} ***: {}".format(templateName,IDFtemplate),IDFobj.ID)) 
@@ -509,15 +378,15 @@ def applyTemplate(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No 
         # This thisClass is multiplied over zones! 
         if (
             (
-             IDDboolMatchField(classDef,"object-list","ZoneNames") 
+             flag_IDD_match_field(classDef,"object-list","ZoneNames") 
              or 
-             IDDboolMatchField(classDef,"object-list","ZoneAndZoneListNames")
+             flag_IDD_match_field(classDef,"object-list","ZoneAndZoneListNames")
              ) 
                 and   
             (
-             IDDboolMatchField(classDef,"field","Zone Name")
+             flag_IDD_match_field(classDef,"field","Zone Name")
              or
-             IDDboolMatchField(classDef,"field","Zone or ZoneList Name") 
+             flag_IDD_match_field(classDef,"field","Zone or ZoneList Name") 
              )
             
             and
@@ -533,22 +402,22 @@ def applyTemplate(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No 
             #raise
             with loggerCritical():
                 try:
-                    position = IDDgetMatchedPosition(classDef,"object-list","ZoneNames")
+                    position = get_IDD_matched_position(classDef,"object-list","ZoneNames")
                 except:
-                    position = IDDgetMatchedPosition(classDef,"object-list","ZoneAndZoneListNames")
+                    position = get_IDD_matched_position(classDef,"object-list","ZoneAndZoneListNames")
 
             #print position
-            if IDDboolMatchField(classDef,"field","Name"):
+            if flag_IDD_match_field(classDef,"field","Name"):
                 # Get the position of the zone name
                 with loggerCritical():
-                    namePosition = IDDgetMatchedPosition(classDef,"field","Name")
+                    namePosition = get_IDD_matched_position(classDef,"field","Name")
             else:
                 namePosition = -1
-            #print IDDboolMatchField(classDef,"field","Name")
+            #print flag_IDD_match_field(classDef,"field","Name")
             #print namePosition
             #raise
             # Loop over zones            
-            for zoneName in idfGetZoneNameList(IDFobj,zoneNames):
+            for zoneName in get_zone_name_list(IDFobj,zoneNames):
                 #print zoneName
                 thisMultiplyObject = deepcopy(objectParent)
                 
@@ -575,7 +444,7 @@ def applyTemplate(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No 
                 IDFobj.XML.append(thisMultiplyObject)
                 #logging.debug(idStr("Zonename updated, position {}".format(int(position)),IDFobj.ID))
 
-            logging.debug(idStr("\tMerged {} into {} over {} zones matching '{}'".format(objectClassName, IDFobj.ID, len(idfGetZoneNameList(IDFobj)),zoneNames),IDFobj.ID))
+            logging.debug(idStr("\tMerged {} into {} over {} zones matching '{}'".format(objectClassName, IDFobj.ID, len(get_zone_name_list(IDFobj)),zoneNames),IDFobj.ID))
 
         # Otherwise, just merge_xml it straight in
         else:
@@ -589,7 +458,7 @@ def applyTemplate(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No 
 
 
 
-def IDDboolMatchField(IDDclass, label, value):
+def flag_IDD_match_field(IDDclass, label, value):
     #printXML(IDDclass)
     #print IDDclass.xpath("//ATTR[@{}='{}']".format(label,value))
     
@@ -600,14 +469,14 @@ def IDDboolMatchField(IDDclass, label, value):
     else:
         return False
 
-def IDDboolHasField(IDDclass, label):
+def flg_IDD_has_field(IDDclass, label):
     if IDDclass.xpath("ATTR[@{}]".format(label)):
         return True
     else:
         return False 
 
 
-def IDDgetMatchedPosition(IDDclass,label,value):
+def get_IDD_matched_position(IDDclass,label,value):
     #search = IDDclass.xpath("ATTR[@{}='{}']".format(label,value))
     #objectName = IDDclass.xpath("CLASS")
     #assert len(search) == 1, "Object {}, {} = {}, {} hits".format(objectName[0].text, label,value,len(search))
@@ -649,7 +518,7 @@ def IDDgetMatchedPosition(IDDclass,label,value):
 
 
 
-def assembleVariants(variants,IDDobj):
+def assemble_variants(variants,IDDobj):
     """
     zoneClass - This is the target class which will be multiplied
     template - this is the template IDF Object
@@ -657,7 +526,7 @@ def assembleVariants(variants,IDDobj):
     raise Exception("SEE VARIANTS IN CENTRAL FOR RECENT")
 
 
-def getTemplatePath(templatePath, filterRegExString = ".", flgExact = True):
+def get_template_path(templatePath, filterRegExString = ".", flgExact = True):
     if flgExact:
         filterRegExString= "^" + filterRegExString + "$"
         
@@ -684,7 +553,7 @@ def getTemplatePath(templatePath, filterRegExString = ".", flgExact = True):
 #                
     raise Exception("Template {} not found in {}".format(filterRegExString,templatePath))
 
-def getTemplates(templatePath, filterRegExString = ".", flgExact = True):
+def get_templates(templatePath, filterRegExString = ".", flgExact = True):
     raise
 # This is just a filter for file names now...
     """Given a path, return a list of matching IDF files, and load into IDF objects
@@ -718,8 +587,8 @@ def getTemplates(templatePath, filterRegExString = ".", flgExact = True):
     return templates
 
 
-def cleanOutObject(IDFobj,keptClassNames, flgExact = True):
-    objectTable = getObjectCountTable(IDFobj)
+def clean_out_object(IDFobj,keptClassNames, flgExact = True):
+    objectTable = get_table_object_count(IDFobj)
     
     #print objectTable
     objectTable.pop(0) # Eject the header
@@ -730,7 +599,7 @@ def cleanOutObject(IDFobj,keptClassNames, flgExact = True):
     myLogger = logging.getLogger()
     myLogger.setLevel("CRITICAL")
     
-    IDFobj = deleteClasses(IDFobj,list(deletedClasses),flgExact)
+    IDFobj = delete_classes(IDFobj,list(deletedClasses),flgExact)
     
     myLogger.setLevel("DEBUG")
     
@@ -744,7 +613,7 @@ def cleanOutObject(IDFobj,keptClassNames, flgExact = True):
     return IDFobj
 
 
-def deleteClasses(IDFobj, classNames, flgExact = True):
+def delete_classes(IDFobj, classNames, flgExact = True):
 
     for className in classNames:
         className = "^" + className + "$"
@@ -760,7 +629,7 @@ def deleteClasses(IDFobj, classNames, flgExact = True):
     return IDFobj
 
 
-def deleteClassesFromExcel(IDFobj, IDDobj, delete):
+def delete_classes_from_excel(IDFobj, IDDobj, delete):
     
     logging.debug(idStr("Deleting: {}".format(delete),IDFobj.ID))
     #[{'class': u'TestClass', 'Name': u'TestName'}]
@@ -771,7 +640,7 @@ def deleteClassesFromExcel(IDFobj, IDDobj, delete):
     assert targetSelection
     #"Name"
     #with loggerCritical():
-    #    position = IDDgetMatchedPosition(targetSelection[0],"field",change['attr'])
+    #    position = get_IDD_matched_position(targetSelection[0],"field",change['attr'])
     #    
     #assert position
     
@@ -804,7 +673,7 @@ def deleteClassesFromExcel(IDFobj, IDDobj, delete):
 
     logging.debug(idStr("Deleted: {} objects".format(len(targetSelection)),IDFobj.ID))
 
-def loadVariants(inputExcelPath,path_idf_base):
+def load_cariants(inputExcelPath,path_idf_base):
     
     logging.debug("Loading variants from {0}".format(inputExcelPath))
     
@@ -900,13 +769,13 @@ def loadVariants(inputExcelPath,path_idf_base):
     
     return variants
 
-def shortStr(theStr, length = 30):
+def short_string(theStr, length = 30):
     if len(theStr)<=length:
         return theStr
     else:
         return theStr[0:length-3] + "..."
 
-def deleteOrphanedZones(IDFobj):
+def delete_orphaned_zones(IDFobj):
 
     ### GET SPACES ###
     xpathSearch = "//CLASS[re:match(text(), '^OS:Space$')]/.."
@@ -1548,36 +1417,10 @@ class IDF(object):
         logging.debug(idStr(
             'Wrote XML {0}'.format(self.pathXmlOutput),
             self.ID))
-    
-    
-    
-    
+
     #--- Utility
     def __add__(self,other):
         return merge_xml(self, other)
-    
-
-
-#===============================================================================
-# Main
-#===============================================================================
-    
-if __name__ == "__main__":
-    print ABSOLUTE_LOGGING_PATH
-    logging.config.fileConfig(ABSOLUTE_LOGGING_PATH)
-    myLogger = logging.getLogger()
-    myLogger.setLevel("DEBUG")
-
-    logging.debug("Started _main".format())
-    
-    #print FREELANCE_DIR
-    
-    unittest.main()
-        
-    logging.debug("Finished _main".format())
-    
-
-
 
 
 
