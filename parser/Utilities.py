@@ -6,6 +6,8 @@ Created on Mar 24, 2011
 import logging
 import string
 from random import choice
+from lxml import etree
+
 log = logging.getLogger(__name__)
 
 def genID(length=4, chars=string.letters + string.digits):
@@ -200,6 +202,10 @@ def prettyPrintCols(strings, widths, split=' '):
 
     # generate the formatted text
     return '\n'.join(map(formatline, *cols))
+
+def printXML(theXMLtree):
+    print(etree.tostring(theXMLtree, pretty_print=True))
+   
 
 def prettyPrint(string, maxlen=75, split=' '):
     """Pretty prints the given string to break at an occurrence of
