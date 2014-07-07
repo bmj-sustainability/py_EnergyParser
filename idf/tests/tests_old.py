@@ -14,8 +14,8 @@ from utility_inspect import whoami, whosdaddy, listObject
 from utility_path import split_up_path 
 # Testing imports
 #from ..IDF import IDF
-import parser.idf_parse as idf
-from parser.utilities import printXML
+import idf.idf_parse as idf
+from idf.utilities import printXML
 from UtilityLogger import loggerCritical
 
 #get_table_all_names

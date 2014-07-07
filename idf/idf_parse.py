@@ -20,11 +20,11 @@ pPrint = pp.pprint
 
 #--- Utilities
 from utility_path import split_up_path, get_files_by_ext_recurse
-from parser.utilities import genID, idStr
+from idf.utilities import genID, idStr
 from UtilityPrintTable import PrettyTable
 from utility_excel import ExcelBookRead
 from UtilityXML import printXML
-from parser.utilities import loggerCritical
+from idf.utilities import loggerCritical
 
 #--- Internal
 
