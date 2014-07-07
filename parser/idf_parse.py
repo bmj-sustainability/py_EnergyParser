@@ -10,7 +10,7 @@ from lxml import etree
 import logging.config
 import copy
 from collections import defaultdict # Python 2.7 has a better 'Counter'
-from Utilities import genID, idStr
+from parser.utilities import genID, idStr
 from win32com.client import Dispatch
 import os
 import csv
@@ -26,7 +26,7 @@ pPrint = pp.pprint
 
 from utility_excel import ExcelBookRead
 from UtilityXML import printXML
-
+from parser.utilities import loggerCritical
 
 
 #from ProjectScripts.generate_variants import *
@@ -165,9 +165,11 @@ keptClassesDict =  {
 }
 
 #--- Manipulate Objects / CONFIRMED
-def merge(objectA, objectB):
+def merge_xml(objectA, objectB):
+    """Given 2 XML nodes, return a merged tree composed of the 2
+    """
     # Start a new XML root object
-    currentXML = myRootNode()
+    currentXML = root_node()
 
     # Create the new IDF object with this root
     mergedIDF = IDF.fromXmlObject(currentXML)
@@ -193,9 +195,8 @@ def merge(objectA, objectB):
     
     return mergedIDF
 
-
 #--- Utilities 
-def forceList(item):
+def force_list(item):
     """Forces item to be a list
     """    
     if not isinstance(item, list):
@@ -205,7 +206,7 @@ def forceList(item):
 
 #--- XML Utilities
 
-def xmlTextReplace(objects, searchStr, theNewText):
+def xml_ATTR_text_replace(objects, searchStr, theNewText):
     """Given a list of XML node objects, search through all ATTR elements
     Replace the "placeHolder" string with "theNewText"
     Returns the entire XML node
@@ -223,11 +224,11 @@ def xmlTextReplace(objects, searchStr, theNewText):
     logging.debug("Replaced {} with {}, {} times".format(searchStr,theNewText,replaceCnt))
     
 
-def getPositionOfATTR(IDDobj, className, XMLattribName, XMLattribValue):
+def get_ATTR_position(IDDobj, className, XMLattribName, XMLattribValue):
     """Given an IDD object, search for a class, an attribute, and it's value, return the
     position
     """
-    classDef = treeGetClass(IDDobj.XML, className)
+    classDef = tree_get_class(IDDobj.XML, className)
     assert len(classDef) == 1, "Actual length {}".format(len(classDef))
     classDef = classDef[0]
     
@@ -235,9 +236,10 @@ def getPositionOfATTR(IDDobj, className, XMLattribName, XMLattribValue):
     
     return position
 
-def myRootNode():
-    # Start the XML tree
-    xmlVer = "0.1"
+def root_node():
+    """Start the XML tree with a root node
+    """
+    xmlVer = "0.2"
     # Root tag
     currentXML = etree.Element("EnergyPlus_XML", XML_version=xmlVer)
     # A comment
@@ -250,7 +252,7 @@ def myRootNode():
 
 
     
-def treeGetClass(IDFtree, classNameRegex, flgExact = True):
+def tree_get_class(IDFtree, classNameRegex, flgExact = True):
     """Returns a list of XML OBJECT nodes according to search of class name
     """
     
@@ -259,7 +261,7 @@ def treeGetClass(IDFtree, classNameRegex, flgExact = True):
         classNameRegex = "^" + classNameRegex + "$" 
     xpathSearch = "//CLASS[re:match(text(), '" + classNameRegex + "')]/.."
     queryElements = xpathRE(IDFtree,xpathSearch)
-    queryElements = forceList(queryElements)
+    queryElements = force_list(queryElements)
 
     logging.debug('Search of {} {} hits in {}'.format(classNameRegex, len(queryElements),IDFtree))
     
@@ -279,7 +281,7 @@ def xpathRE(tree, strXpath):
 
 def idfGetZoneNameList(IDFobj, zoneName='.'):
     with loggerCritical():
-        zoneElements = treeGetClass(IDFobj.XML, "^Zone$")
+        zoneElements = tree_get_class(IDFobj.XML, "^Zone$")
     
     names = list()
     for zoneEl in zoneElements:
@@ -403,7 +405,7 @@ def applyDefaultConstNames(IDFobj, IDDobj):
 def applyChange(IDFobj, IDDobj, change):
     
     with loggerCritical():
-        targetSelection = treeGetClass(IDDobj.XML, change['class'], True)
+        targetSelection = tree_get_class(IDDobj.XML, change['class'], True)
         #printXML(targetSelection[0])
     assert targetSelection
     
@@ -413,7 +415,7 @@ def applyChange(IDFobj, IDDobj, change):
     assert position
     
     with loggerCritical():
-        targetSelection = treeGetClass(IDFobj.XML, change['class'], True)
+        targetSelection = tree_get_class(IDFobj.XML, change['class'], True)
     
     # Match the NAME
     if len(targetSelection) > 1:
@@ -489,7 +491,7 @@ def applyTemplate(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No 
     
     #replacement = random.randint(0, 1000000)
     #replacement = "{}".format(replacement)
-    xmlTextReplace(allObjsList, "*SYSTEM NUMBER*",  uniqueName)
+    xml_ATTR_text_replace(allObjsList, "*SYSTEM NUMBER*",  uniqueName)
     #print allObjsList
     
     #raise 
@@ -499,7 +501,7 @@ def applyTemplate(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No 
         # Inspect the DEFINITION of this thisClass
         objectClassName =  thisClass.text
         with loggerCritical():
-            classDef = treeGetClass(IDDobj.XML, objectClassName)
+            classDef = tree_get_class(IDDobj.XML, objectClassName)
         assert len(classDef) >= 1, "Couldn't any {} in IDD".format(objectClassName)
         assert len(classDef) == 1, "Found {} in IDD {} times".format(objectClassName,len(classDef))
         classDef = classDef[0]
@@ -554,7 +556,7 @@ def applyTemplate(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No 
                     uniqueNameAttr = thisMultiplyObject.xpath("//ATTR[{}]".format(int(namePosition)))
                     uniqueNameAttr[0].text = uniqueNameAttr[0].text + zoneName
                 #print namePosition
-                #xmlTextReplace([thisMultiplyObject], r"\*ZONENAME\*",zoneName)
+                #xml_ATTR_text_replace([thisMultiplyObject], r"\*ZONENAME\*",zoneName)
                 
                 # Update pointer to zone name
                 targetNameAttr = thisMultiplyObject.xpath("//ATTR[{}]".format(int(position)))
@@ -575,7 +577,7 @@ def applyTemplate(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No 
 
             logging.debug(idStr("\tMerged {} into {} over {} zones matching '{}'".format(objectClassName, IDFobj.ID, len(idfGetZoneNameList(IDFobj)),zoneNames),IDFobj.ID))
 
-        # Otherwise, just merge it straight in
+        # Otherwise, just merge_xml it straight in
         else:
             
             # BUT: Check for any possible unique names
@@ -747,7 +749,7 @@ def deleteClasses(IDFobj, classNames, flgExact = True):
     for className in classNames:
         className = "^" + className + "$"
         
-        queryElements = treeGetClass(IDFobj.XML,className)
+        queryElements = tree_get_class(IDFobj.XML,className)
 
         for object in queryElements:
             IDFobj.XML.remove(object)
@@ -764,7 +766,7 @@ def deleteClassesFromExcel(IDFobj, IDDobj, delete):
     #[{'class': u'TestClass', 'Name': u'TestName'}]
     #raise
     with loggerCritical():
-        targetSelection = treeGetClass(IDDobj.XML, delete['class'], True)
+        targetSelection = tree_get_class(IDDobj.XML, delete['class'], True)
         #printXML(targetSelection[0])
     assert targetSelection
     #"Name"
@@ -774,7 +776,7 @@ def deleteClassesFromExcel(IDFobj, IDDobj, delete):
     #assert position
     
     with loggerCritical():
-        targetSelection = treeGetClass(IDFobj.XML, delete['class'], True)
+        targetSelection = tree_get_class(IDFobj.XML, delete['class'], True)
     
     # Match the NAME
     if len(targetSelection) > 1:
@@ -1279,7 +1281,7 @@ class IDF(object):
     def parseIDFtoXML2(self):
         """Currently used for IDD object, but could be used for IDF??
         """
-        currentXML = myRootNode()
+        currentXML = root_node()
         
         pattDict = {
                     "Comment line"          : re.compile(r"^!",re.VERBOSE),
@@ -1389,7 +1391,7 @@ class IDF(object):
         for line in self.IDDstring.split('\n'):
             lines.append(line)
 
-        currentXML = myRootNode()
+        currentXML = root_node()
         lineIndex = 0
         #zoneNameIndex = 0
         
@@ -1552,7 +1554,7 @@ class IDF(object):
     
     #--- Utility
     def __add__(self,other):
-        return merge(self, other)
+        return merge_xml(self, other)
     
 
 

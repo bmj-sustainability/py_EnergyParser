@@ -10,6 +10,15 @@ from lxml import etree
 
 log = logging.getLogger(__name__)
 
+class loggerCritical:
+    def __enter__(self):
+        myLogger = logging.getLogger()
+        myLogger.setLevel("CRITICAL")
+    def __exit__(self, type, value, traceback):
+        myLogger = logging.getLogger()
+        myLogger.setLevel("DEBUG")
+
+
 def genID(length=4, chars=string.letters + string.digits):
     return ''.join([choice(chars) for i in range(length)])
 
