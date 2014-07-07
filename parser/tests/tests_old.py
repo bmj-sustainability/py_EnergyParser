@@ -16,6 +16,7 @@ from utility_path import split_up_path
 #from ..IDF import IDF
 import parser.IDF as idf
 from parser.Utilities import printXML
+from UtilityLogger import loggerCritical
 
 #getAllObjectsTable
 
@@ -30,7 +31,6 @@ myLogger.setLevel("DEBUG")
 # Unit testing
 #===============================================================================
 class IDDTests(unittest.TestCase):
-    
     def setUp(self):
         print("**** TEST {} ****".format(whoami()))
         currentPath = split_up_path(__file__)
@@ -128,11 +128,11 @@ class IDFtests(unittest.TestCase):
         # Assemble!
         #===========================================================================
         #idfAssembly(projectFile,weatherFilePath,outputDirPath,groupName)
-        variants = loadVariants(self.thisTestExcelProj)
+        variants = idf.loadVariants(self.thisTestExcelProj)
         
     def test040_cleanObjects(self):
         print( "**** TEST {} ****".format(whoami()))
-        myIDF = IDF.fromIdfFile(self.path_CentralTower)
+        myIDF = idf.IDF.fromIdfFile(self.path_CentralTower)
         #printStdTable(getObjectCountTable(myIDF))
         
         #zoneObjs = treeGetClass(myIDF.XML, "Zone")
@@ -140,7 +140,7 @@ class IDFtests(unittest.TestCase):
         #printStdTable(getObjectCountTable(myIDF))
         #print keptClassesDict['onlyGeometry']
         #print myIDF.numObjects
-        cleanOutObject(myIDF, keptClassesDict['onlyGeometry'])
+        idf.cleanOutObject(myIDF, idf.keptClassesDict['onlyGeometry'])
         #print myIDF.numObjects
         assert(myIDF.numObjects == 224)
         #printStdTable(getObjectCountTable(myIDF))
@@ -149,7 +149,7 @@ class IDFtests(unittest.TestCase):
         
     def test050_applyTemplates(self):
         print( "**** TEST {} ****".format(whoami()))
-        variants = loadVariants(self.thisTestExcelProj)
+        variants = idf.loadVariants(self.thisTestExcelProj)
         
         # Customize for test
         myVariant = variants.itervalues().next()
@@ -198,9 +198,9 @@ class TemplateTtests(unittest.TestCase):
     def test050_applyTemplates(self):
         print( "**** TEST {} ****".format(whoami()))
         
-        IDDobj = IDF.fromXmlFile(self.path_IDD_XML)
+        IDDobj = idf.IDF.fromXmlFile(self.path_IDD_XML)
         print( IDDobj)
-        variants = loadVariants(self.thisTestExcelProj)
+        variants = idf.loadVariants(self.thisTestExcelProj)
 
         # Customize for test
         myVariant = variants.itervalues().next() # Get one variant
@@ -211,19 +211,19 @@ class TemplateTtests(unittest.TestCase):
         
 
         
-        assembleVariants(myVariants,IDDobj)
+        idf.assembleVariants(myVariants,IDDobj)
 
 class MyTest(unittest.TestCase):
     def test050_applyTemplates(self):
         print( "**** TEST {} ****".format(whoami()))
         testPath = r"C:\Users\Anonymous2\Desktop\TestIDF.txt"
         testPathOUT = r"C:\Users\Anonymous2\Desktop\TestIDF.xml"
-        IDFobj = IDF.fromIdfFile(testPath)
+        IDFobj = idf.IDF.fromIdfFile(testPath)
         IDFobj.writeXml(testPathOUT)
         
         raise
         print( IDDobj)
-        variants = loadVariants(self.thisTestExcelProj)
+        variants = idf.loadVariants(self.thisTestExcelProj)
 
         # Customize for test
         myVariant = variants.itervalues().next() # Get one variant
@@ -238,6 +238,6 @@ class JustForCentralDELETEORPHANS(unittest.TestCase):
         print( "**** TEST {} ****".format(whoami()))
         osmFilePath = r"C:\Users\Anonymous2\Desktop\SKPOSM\Main r04.osm"
         osmFileOut = r"C:\Users\Anonymous2\Desktop\SKPOSM\Cleaned.osm"
-        IDFobj = IDF.fromIdfFile(osmFilePath) 
-        deleteOrphanedZones(IDFobj)
+        IDFobj = idf.IDF.fromIdfFile(osmFilePath) 
+        idf.deleteOrphanedZones(IDFobj)
         IDFobj.writeIdf(osmFileOut)

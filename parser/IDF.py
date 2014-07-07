@@ -23,7 +23,6 @@ import pprint as pprint
 import random as random
 pp = pprint.PrettyPrinter(indent=4)
 pPrint = pp.pprint
-from UtilityLogger import loggerCritical
 
 from utility_excel import ExcelBookRead
 from UtilityXML import printXML
