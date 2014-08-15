@@ -681,7 +681,7 @@ def load_cariants(inputExcelPath,path_idf_base):
     book = ExcelBookRead(inputExcelPath)
 
     # Select the sheet
-    variantsTable = book.getTable("(Variants)", startRow = 0, endRow=None, startCol=0, endCol=None)
+    variantsTable = book.get_table("(Variants)", startRow = 0, endRow=None, startCol=0, endCol=None)
     try:
         variantBlockLimits = [variantsTable.index(row) for row in variantsTable if row[0]]
     except:
