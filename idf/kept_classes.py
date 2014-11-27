@@ -2,7 +2,6 @@
 Expressed as a dict containing sets of class names
 """
 
-
 #from ProjectScripts.generate_variants import *
 
 keptClassesDict =  {

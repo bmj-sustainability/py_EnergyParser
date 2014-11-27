@@ -46,13 +46,13 @@ class IDDTests(unittest.TestCase):
         
     def test010_IDDSample(self):
         print( "**** TEST {} ****".format(whoami()))
-        testIDD = idf.idf_parse.fromIDDFile(self.pathIDDsample)
+        testIDD = idf.idf_parse.from_IDD_file(self.pathIDDsample)
         printXML(testIDD.XML)
         
     def test020_IDD_FULL(self):
         print( "**** TEST {} ****".format(whoami()))
 
-        testIDD = idf.idf_parse.fromIDDFile(self.pathIDDfull)
+        testIDD = idf.idf_parse.from_IDD_file(self.pathIDDfull)
 
         testIDD.writeXml(r"c:\\temp\\test.xml")
         
@@ -84,7 +84,7 @@ class IDFtests(unittest.TestCase):
     def test010_SimpleCreation(self):
         print( "**** TEST {} ****".format(whoami()))
         
-        testIDF = idf.idf_parse.fromIdfFile(self.path_5Zone)
+        testIDF = idf.idf_parse.from_IDF_file(self.path_5Zone)
         #print testIDF
         #print listZones(testIDF)
         #countAllClasses(testIDF, printFlag = 1)
@@ -108,7 +108,7 @@ class IDFtests(unittest.TestCase):
 
         templates = idf.loadTemplates(IDF_TEMPLATE_PATH)
         
-        testIDF = idf.idf_parse.fromIdfFile(self.path_5Zone)
+        testIDF = idf.idf_parse.from_IDF_file(self.path_5Zone)
         with loggerCritical():
             for template in templates:
                 testIDF = testIDF + template
@@ -132,7 +132,7 @@ class IDFtests(unittest.TestCase):
         
     def test040_cleanObjects(self):
         print( "**** TEST {} ****".format(whoami()))
-        myIDF = idf.idf_parse.fromIdfFile(self.path_CentralTower)
+        myIDF = idf.idf_parse.from_IDF_file(self.path_CentralTower)
         #printStdTable(get_table_object_count(myIDF))
         
         #zoneObjs = tree_get_class(myIDF.XML, "Zone")
@@ -198,7 +198,7 @@ class TemplateTtests(unittest.TestCase):
     def test050_applyTemplates(self):
         print( "**** TEST {} ****".format(whoami()))
         
-        IDDobj = idf.idf_parse.fromXmlFile(self.path_IDD_XML)
+        IDDobj = idf.idf_parse.from_XML_file(self.path_IDD_XML)
         print( IDDobj)
         variants = idf.load_cariants(self.thisTestExcelProj)
 
@@ -218,7 +218,7 @@ class MyTest(unittest.TestCase):
         print( "**** TEST {} ****".format(whoami()))
         testPath = r"C:\Users\Anonymous2\Desktop\TestIDF.txt"
         testPathOUT = r"C:\Users\Anonymous2\Desktop\TestIDF.xml"
-        IDFobj = idf.idf_parse.fromIdfFile(testPath)
+        IDFobj = idf.idf_parse.from_IDF_file(testPath)
         IDFobj.writeXml(testPathOUT)
         
         raise
@@ -238,6 +238,6 @@ class JustForCentralDELETEORPHANS(unittest.TestCase):
         print( "**** TEST {} ****".format(whoami()))
         osmFilePath = r"C:\Users\Anonymous2\Desktop\SKPOSM\Main r04.osm"
         osmFileOut = r"C:\Users\Anonymous2\Desktop\SKPOSM\Cleaned.osm"
-        IDFobj = idf.idf_parse.fromIdfFile(osmFilePath) 
+        IDFobj = idf.idf_parse.from_IDF_file(osmFilePath) 
         idf.delete_orphaned_zones(IDFobj)
         IDFobj.writeIdf(osmFileOut)

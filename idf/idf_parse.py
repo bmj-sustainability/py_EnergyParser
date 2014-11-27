@@ -8,12 +8,7 @@ import re
 import logging.config
 import copy
 from collections import defaultdict # Python 2.7 has a better 'Counter'
-#from win32com.client import Dispatch
-#import os
-#import csv
 from copy import deepcopy
-#import json as json
-#import random as random
 import pprint as pprint
 pp = pprint.PrettyPrinter(indent=4)
 pPrint = pp.pprint
@@ -43,7 +38,7 @@ def merge_xml(objectA, objectB):
     currentXML = root_node()
 
     # Create the new IDF object with this root
-    mergedIDF = IDF.fromXmlObject(currentXML)
+    mergedIDF = IDF.from_XML_object(currentXML)
 
     AObjects = objectA.XML.xpath('//OBJECT')
     for object in AObjects:
@@ -543,7 +538,7 @@ def get_template_path(templatePath, filterRegExString = ".", flgExact = True):
 #            fileName = os.path.splitext(base)[0]
 #            if  re.search(filterRegExString,fileName):
 #                #print path
-#                #templatePath=IDF.fromIdfFile(path,fileName)
+#                #templatePath=IDF.from_IDF_file(path,fileName)
 #                print os.path.abspath(fileName)
 #                print fileName
 #                raise
@@ -569,7 +564,7 @@ def get_templates(templatePath, filterRegExString = ".", flgExact = True):
             fileName = os.path.splitext(base)[0]
             if  re.search(filterRegExString,fileName):
                 #print path
-                template=IDF.fromIdfFile(path,fileName)
+                template=IDF.from_IDF_file(path,fileName)
                 #template.getTemplateInfo()
                 templates.append(template)
     
@@ -838,7 +833,7 @@ class IDF(object):
 
 
     @classmethod
-    def fromIdfFile(cls, pathIdfInput, ID = None):
+    def from_IDF_file(cls, pathIdfInput, ID = None):
         # First start a blank object
         thisClass = IDF(pathIdfInput=pathIdfInput, ID=ID)
         if not ID:
@@ -860,7 +855,7 @@ class IDF(object):
         return thisClass
 
     @classmethod
-    def fromIDDFile(cls, pathIdfInput, ID = None):
+    def from_IDD_file(cls, pathIdfInput, ID = None):
         # First start a blank object
         thisClass = IDF(pathIdfInput=pathIdfInput, ID=ID)
         thisClass.ID = ID
@@ -880,26 +875,21 @@ class IDF(object):
 
 
     @classmethod
-    def fromXmlFile(cls, pathXmlFile):
+    def from_XML_file(cls, pathXmlFile):
+        # Instantiate from an xml file on disk
         
-        # First start a blank object
         thisClass = IDF()
-        
         thisClass.loadXML(pathXmlFile)
-
-        #this
-        #raise Exception("UNSUPPORTED")
-        #thisClass = IDF()
-        #thisClass.ID = genID() 
-        #logging.debug(idStr('NOT IMPLEMENTED Creating IDF object from XML file', thisClass.ID))
-        #cls.loadIDF(cls)
+        
         return thisClass
     
     @classmethod
-    def fromXmlObject(cls, XML):
+    def from_XML_object(cls, XML):
+        # Instantiate a new empty IDF object
+        
         # First start a blank object
         thisClass = IDF()
-        #thisClass.ID = genID() 
+         
         # Assign the XML object
         thisClass.XML = XML
         # Return this class
@@ -938,7 +928,7 @@ class IDF(object):
         else:
             return 0 
 
-    def printTemplateDef(self):
+    def print_template_def(self):
         try:
             print self.templateDef
         except:
@@ -946,8 +936,8 @@ class IDF(object):
         
         
     #--- Load data
-    def loadXML(self,XMLpath):
-        #print XMLpath
+    def loadXML(self, XMLpath):
+        # Load XML from file on disk
         self.XML = etree.parse(XMLpath)
         
         logging.debug(idStr(
@@ -956,12 +946,11 @@ class IDF(object):
                                                  ),self.ID))
 
     def loadIDF(self):
+        # Load IDF file lines into memory 
+        
         # Define input and output full file paths
         fIn = open(self.pathIdfInput, 'r')
        
-        # Calls the readlines method of object which returns a list object of lines
-        #self.IDFlines = fIn.readlines()
-        
         self.IDDstring = fIn.read()
         
         countLines = 0
@@ -975,6 +964,7 @@ class IDF(object):
                                                  ),self.ID))
         
         fIn.close()
+        
     #--- Convert data
 
     def convertXMLtoIDF(self):
@@ -1148,7 +1138,7 @@ class IDF(object):
         return tokens
     
     def parseIDFtoXML2(self):
-        """Currently used for IDD object, but could be used for IDF??
+        """Currently used for IDD object, but potentially used for IDF
         """
         currentXML = root_node()
         
