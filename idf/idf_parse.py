@@ -968,7 +968,8 @@ class IDF(object):
     #--- Convert data
 
     def convertXMLtoIDF(self):
-       
+        # This method uses XSLT transform to convert XML into the IDF
+        
         stringTransform = """<?xml version="1.0" ?>
             <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
             <xsl:output method="text" indent="no"/>
