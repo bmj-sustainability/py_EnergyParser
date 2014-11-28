@@ -1,45 +1,33 @@
-from __future__ import division    
+#!/usr/bin/env python
+#
+# EnergyParser
+# Copyright (c) 2011, B. Marcus Jones <>
+# All rights reserved.
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#--- Config
-#from config import *
+from __future__ import division    
 
 #--- Standard
 import re
 import logging
-#import copy
-#from collections import defaultdict # Python 2.7 has a better 'Counter'
-#from copy import deepcopy
-import pprint as pprint
-pp = pprint.PrettyPrinter(indent=4)
-pPrint = pp.pprint
 
 #--- Utilities
-#from utility_path import split_up_path, get_files_by_ext_recurse
-from idf.utilities_base import genID, idStr
-#from UtilityPrintTable import PrettyTable
-#from utility_excel import ExcelBookRead
-#from UtilityXML import printXML
-#from idf.utilities_base import loggerCritical
-
+from idf.utilities_base import gen_ID, idStr, root_node
 
 #--- Third party
 from lxml import etree
-
-def root_node():
-    """Start the XML tree with a root node
-    """
-    xmlVer = "0.2"
-    # Root tag
-    currentXML = etree.Element("EnergyPlus_XML", XML_version=xmlVer)
-    # A comment
-    commentXML = etree.Comment("XML Schema for EnergyPlus version 6 'IDF' files and OpenStudio version 0.3.0 'OSM' files")
-    currentXML.append(commentXML)
-    # Another comment
-    commentXML = etree.Comment("Schema created April. 2011 by Marcus Jones")
-    currentXML.append(commentXML)
-    return currentXML
-
-
 
 class IDF(object):
     '''
@@ -68,14 +56,14 @@ class IDF(object):
     '''
     
     #--- Creation
-    #def __init__(self, pathIdfInput=None, XML=None, IDDstring = None, pathIdfOutput = None):
+    #def __init__(self, pathIdfInput=None, XML=None, IDF_string = None, pathIdfOutput = None):
     def __init__(self, pathIdfInput=None, ID = None):
         # The path to source file
         self.pathIdfInput = pathIdfInput
 
         # Generate a random ID
         if not ID:
-            self.ID = genID()
+            self.ID = gen_ID()
         
         # Created later
         #self.XML = None
@@ -85,7 +73,7 @@ class IDF(object):
         # First start a blank object
         thisClass = IDF(pathIdfInput=pathIdfInput, ID=ID)
         if not ID:
-            thisClass.ID = genID()
+            thisClass.ID = gen_ID()
         else: 
             thisClass.ID = ID
         
@@ -98,7 +86,7 @@ class IDF(object):
 
         logging.debug(idStr('Created an IDF object named {}, with {} objects'.format(
                                                                                thisClass.ID,
-                                                                               thisClass.numObjects,
+                                                                               thisClass.num_objects,
                                                                                ), thisClass.ID))
         return thisClass
 
@@ -117,7 +105,7 @@ class IDF(object):
 
         logging.debug(idStr('Created an IDD (DEFINITION) object named {}, with {} objects'.format(
                                                                                thisClass.ID,
-                                                                               thisClass.numObjects,
+                                                                               thisClass.num_objects,
                                                                                ), thisClass.ID))
         return thisClass
 
@@ -144,7 +132,7 @@ class IDF(object):
         #logging.debug(idStr('Created IDF object from XML object', thisClass.ID))
 #        logging.debug(idStr('Created an IDF object named {}, with {} objects'.format(
 #                                                                               thisClass.ID,
-#                                                                               thisClass.numObjects,
+#                                                                               thisClass.num_objects,
 #                                                                               ), thisClass.ID))
 #        
         return thisClass
@@ -153,23 +141,23 @@ class IDF(object):
     def __str__(self):
         return "IDF:{}, IDF Lines:{}, XML Objects:{}, XML_root:{}".format(
                              self.ID,
-                             self.numLines,
-                             self.numObjects,
+                             self.num_lines,
+                             self.num_objects,
                              self.XML,
                              )
             #'Loaded IDF {0} with {1} lines'.format(self.pathIdfInput,countLines),
             #sxself.ID))
     
     @property
-    def numLines(self):
+    def num_lines(self):
         try: 
-            self.IDFstring
-            return(len(self.IDFstring))
+            #self.IDF_string
+            return(len(self.IDF_string.split('\n')))
         except:
             return 0
     
     @property
-    def numObjects(self):
+    def num_objects(self):
         if self.XML is not None:
             objects = self.XML.xpath('OBJECT')
             return(int(len(objects)))
@@ -190,7 +178,7 @@ class IDF(object):
         
         logging.debug(idStr(
             'Loaded XML from {}, {} objects'.format(
-                                                 XMLpath, self.numObjects
+                                                 XMLpath, self.num_objects
                                                  ),self.ID))
 
     def load_IDF(self):
@@ -199,10 +187,10 @@ class IDF(object):
         # Define input and output full file paths
         fIn = open(self.pathIdfInput, 'r')
        
-        self.IDDstring = fIn.read()
+        self.IDF_string = fIn.read()
         
         countLines = 0
-        for line in self.IDDstring.split('\n'):
+        for line in self.IDF_string.split('\n'):
             countLines += 1
 
         logging.debug(idStr(
@@ -282,20 +270,21 @@ class IDF(object):
         # Write a new IDF file from the current XML
         newIdfXml = transform(self.XML)
      
-        self.IDDstring = newIdfXml.__str__()
+        self.IDF_string = newIdfXml.__str__()
         
         logging.debug(idStr(
-            'Converted XML to IDF, {} objects'.format(self.numObjects),
+            'Converted XML to IDF, {} objects'.format(self.num_objects),
             self.ID))
         
 
     def tokenize(self,thisLine):
         tokens = dict()
         
-        splitDict = {
-             "splitFld"                 : re.compile(r"\\ \w+",re.VERBOSE),
-             "splitComma"   : re.compile(r",",re.VERBOSE),
-                 }
+#         splitDict = {
+#              "splitFld"                 : re.compile(r"\\ \w+",re.VERBOSE),
+#              "splitComma"   : re.compile(r",",re.VERBOSE),
+#                  }
+#         
         pattDict = {
                     "Object"          : re.compile(r"^\s*[\w:]+\s*[,;]",re.VERBOSE),
                     "Field"                 : re.compile(r"\\ \S+",re.VERBOSE),
@@ -366,7 +355,7 @@ class IDF(object):
                     }
         
         lines = list()
-        for line in self.IDDstring.split('\n'):
+        for line in self.IDF_string.split('\n'):
             lines.append(line)   
         
         lineIndex = 0 
@@ -446,7 +435,7 @@ class IDF(object):
             'Converted IDD to XML:{} {}, {} objects'.format( 
                                                        type(self.XML),
                                                        self.XML,
-                                                       self.numObjects,
+                                                       self.num_objects,
                                                        ),self.ID))    
     def parse_IDF_to_XML(self):
         
@@ -459,7 +448,7 @@ class IDF(object):
          # create a local copy
         lines = []
         
-        for line in self.IDDstring.split('\n'):
+        for line in self.IDF_string.split('\n'):
             lines.append(line)
 
         currentXML = root_node()
@@ -577,7 +566,7 @@ class IDF(object):
             'Converted IDF to XML:{} {}, {} objects'.format( 
                                                        type(self.XML),
                                                        self.XML,
-                                                       self.numObjects,
+                                                       self.num_objects,
                                                        ),self.ID))
     #--- Write data
     def write_IDF(self, pathIdfOutput):
@@ -595,12 +584,12 @@ class IDF(object):
 
         fOut = open(self.pathIdfOutput, 'w')
         
-        fOut.write(self.IDDstring)
+        fOut.write(self.IDF_string)
         
         fOut.close()
 
         logging.debug(idStr(
-            'Wrote IDF {}, {} objects'.format(pathIdfOutput,self.numObjects, self.numLines),
+            'Wrote IDF {}, {} objects'.format(pathIdfOutput,self.num_objects, self.num_lines),
             self.ID))
         
     def write_XML(self,pathXmlOutput):

@@ -34,3 +34,289 @@
 #            data["uniqueName"] =  nameDef[1].strip()
         self.templateDef = data
     
+    
+    
+    
+def dumpObj(obj, maxlen=77, lindent=24, maxspew=600):
+    """Print a nicely formatted overview of an object.
+
+    The output lines will be wrapped at maxlen, with lindent of space
+    for names of attributes.  A maximum of maxspew characters will be
+    printed for each attribute value.
+
+    You can hand dumpObj any data type -- a module, class, instance,
+    new class.
+
+    Note that in reformatting for compactness the routine trashes any
+    formatting in the docstrings it prints.
+
+    Example:
+       >>> class Foo(object):
+               a = 30
+               def bar(self, b):
+                   "A silly method"
+                   return a*b
+       ... ... ... ... 
+       >>> foo = Foo()
+       >>> dumpObj(foo)
+       Instance of class 'Foo' as defined in module __main__ with id 136863308
+       Documentation string:   None
+       Built-in Methods:       __delattr__, __getattribute__, __hash__, __init__
+                               __new__, __reduce__, __repr__, __setattr__,       
+                               __str__
+       Methods:
+         bar                   "A silly method"
+       Attributes:
+         __dict__              {}
+         __weakref__           None
+         a                     30
+    """
+    
+    import types
+
+    # Formatting parameters.
+    ltab    = 2    # initial tab in front of level 2 text
+
+    # There seem to be a couple of other types; gather templates of them
+    MethodWrapperType = type(object().__hash__)
+
+    #
+    # Gather all the attributes of the object
+    #
+    objclass  = None
+    objdoc    = None
+    objmodule = '<None defined>'
+    
+    methods   = []
+    builtins  = []
+    classes   = []
+    attrs     = []
+    for slot in dir(obj):
+        attr = getattr(obj, slot)
+        if   slot == '__class__':
+            objclass = attr.__name__
+        elif slot == '__doc__':
+            objdoc = attr
+        elif slot == '__module__':
+            objmodule = attr
+        elif (isinstance(attr, types.BuiltinMethodType) or 
+              isinstance(attr, MethodWrapperType)):
+            builtins.append( slot )
+        elif (isinstance(attr, types.MethodType) or
+              isinstance(attr, types.FunctionType)):
+            methods.append( (slot, attr) )
+        elif isinstance(attr, types.TypeType):
+            classes.append( (slot, attr) )
+        else:
+            attrs.append( (slot, attr) )
+
+    #
+    # Organize them
+    #
+    methods.sort()
+    builtins.sort()
+    classes.sort()
+    attrs.sort()
+
+    #
+    # Print a readable summary of those attributes
+    #
+    normalwidths = [lindent, maxlen - lindent]
+    tabbedwidths = [ltab, lindent-ltab, maxlen - lindent - ltab]
+
+    def truncstring(s, maxlen):
+        if len(s) > maxlen:
+            return s[0:maxlen] + ' ...(%d more chars)...' % (len(s) - maxlen)
+        else:
+            return s
+
+    # Summary of introspection attributes
+    if objclass == '':
+        objclass = type(obj).__name__
+    intro = "Instance of class '%s' as defined in module %s with id %d" % \
+            (objclass, objmodule, id(obj))
+    print('\n'.join(prettyPrint(intro, maxlen)))
+
+    # Object's Docstring
+    if objdoc is None:
+        objdoc = str(objdoc)
+    else:
+        objdoc = ('"""' + objdoc.strip()  + '"""')
+    print
+    print(prettyPrintCols( ('Documentation string:',
+                            truncstring(objdoc, maxspew)),
+                          normalwidths, ' '))
+
+    # Built-in methods
+    if builtins:
+        bi_str   = delchars(str(builtins), "[']") or str(None)
+        print
+        print(prettyPrintCols( ('Built-in Methods:',
+                                truncstring(bi_str, maxspew)),
+                              normalwidths, ', '))
+        
+    # Classes
+    if classes:
+        print
+        print('Classes:')
+    for (classname, classtype) in classes:
+        classdoc = getattr(classtype, '__doc__', None) or '<No documentation>'
+        print(prettyPrintCols( ('',
+                                classname,
+                                truncstring(classdoc, maxspew)),
+                              tabbedwidths, ' '))
+
+    # User methods
+    if methods:
+        print
+        print('Methods:')
+    for (methodname, method) in methods:
+        methoddoc = getattr(method, '__doc__', None) or '<No documentation>'
+        print(prettyPrintCols( ('',
+                                methodname,
+                                truncstring(methoddoc, maxspew)),
+                              tabbedwidths, ' '))
+
+    # Attributes
+    if attrs:
+        print
+        print 'Attributes:'
+    for (attr, val) in attrs:
+        print prettyPrintCols( ('',
+                                attr,
+                                truncstring(str(val), maxspew)),
+                              tabbedwidths, ' ')
+    
+    
+    
+def get_templates(templatePath, filterRegExString = ".", flgExact = True):
+    raise
+# This is just a filter for file names now...
+    """Given a path, return a list of matching IDF files, and load into IDF objects
+    """ 
+
+    templates = list()
+    if flgExact:
+        filterRegExString= "^" + filterRegExString + "$"
+
+    with loggerCritical():
+        for path in get_files_by_ext_recurse(templatePath, "idf"):
+            base=os.path.basename(path)
+            fileName = os.path.splitext(base)[0]
+            if  re.search(filterRegExString,fileName):
+                #print path
+                template=IDF.from_IDF_file(path,fileName)
+                #template.getTemplateInfo()
+                templates.append(template)
+    
+    # No duplicates!
+    assert(len(templates) == len(set(templates)))
+    assert len(templates)
+    
+#    assert(len(thisTemplate) == 1), "Template; {} found {} matches {}".format(templateDef['templateName'],
+#                    len(thisTemplate),thisTemplate)
+#    thisTemplate = thisTemplate[0]    
+        
+    
+    logging.debug("Found {} templates in {} filtered {}".format(len(templates),IDF_TEMPLATE_PATH, filterRegExString))
+    
+    return templates
+    
+    
+    
+def load_cariants(inputExcelPath,path_idf_base):
+    
+    logging.debug("Loading variants from {0}".format(inputExcelPath))
+    
+    # Attach the book
+    book = ExcelBookRead(inputExcelPath)
+
+    # Select the sheet
+    variantsTable = book.get_table("(Variants)", startRow = 0, endRow=None, startCol=0, endCol=None)
+    try:
+        variantBlockLimits = [variantsTable.index(row) for row in variantsTable if row[0]]
+    except:
+        print(variantsTable)
+        raise
+    
+    variants = dict()
+    while len(variantBlockLimits) > 1:
+        startRow = variantBlockLimits[0]
+        endRow = variantBlockLimits[1]
+
+        #print "This variant table", 
+        variantBlockLimits.pop(0)
+        #print variantsTable
+        variantName = variantsTable[startRow][0]
+        logging.debug("Working on {} table, rows {} to {}".format(variantName,startRow, endRow))
+        
+        if variantName in variants:
+            raise Exception("Duplicate variant name {}".format(variantsTable[startRow][0]))
+        
+        rawTable = variantsTable[startRow:endRow]
+        description = rawTable[0][2]
+        
+        # Process source path
+        sourcePathDefinition = rawTable[0][3]
+        sourcePath = path_idf_base + sourcePathDefinition
+        
+        # Flags
+        flagIndices = [rawTable.index(row) for row in rawTable if row[1].strip() == "flag"]
+        flagDefs =  [{"flag":rawTable[ind][2],
+                "argument":rawTable[ind][3]}
+                for ind in flagIndices]
+                
+        # Deletes
+        deleteIndices = [rawTable.index(row) for row in rawTable if row[1].strip() == "del"]
+        deleteDefs =  [{"class":rawTable[ind][2],
+                "objName":rawTable[ind][3]}
+                for ind in deleteIndices]
+        
+        # Templates
+        templateIndices = [rawTable.index(row) for row in rawTable if row[1] == "tp"] 
+        templateDefs =  [{"templateName":rawTable[ind][2],
+                "zones":rawTable[ind][3],
+                "uniqueName":"{}".format(rawTable[ind][4])} 
+                for ind in templateIndices]
+        # Changes
+        changeIndices = [rawTable.index(row) for row in rawTable if row[1] == "ch"] 
+        changeDefs = [{"class":rawTable[ind][2],
+                "objName":rawTable[ind][3],
+                "attr":rawTable[ind][4],
+                "newVal":rawTable[ind][5],
+                } 
+                for ind in changeIndices]
+        
+              
+        variants[variantName] = {
+                                 "flags" : flagDefs,
+                                 "deletes" : deleteDefs,
+                                 "templates" : templateDefs,
+                                 "changes" : changeDefs,
+                                 "source" : sourcePath,
+                                 "description" : description,
+                                 
+                                 }
+    #print variants
+    for var in variants:
+        thisVar = variants[var]
+        logging.debug("      *** {:>5} - {:<50} *** ".format("Variant",var))
+        
+        logging.debug("{:>20} : {:<50}".format("templates",len(thisVar["templates"])))
+
+        logging.debug("{:>20} : {:<50}".format("flags",len(thisVar["flags"])))
+                      
+        logging.debug("{:>20} : {:<50}".format("deletes",len(thisVar["deletes"])))
+        logging.debug("{:>20} : {:<50}".format("changes",len(thisVar["changes"])))
+        logging.debug("{:>20} : {:<50}".format("description",thisVar["description"]))
+        logging.debug("{:>20} : {:<50}".format("source",thisVar["source"]))
+
+   
+    #print variants
+    logging.debug("Loaded {} variants from {}".format(len(variants),inputExcelPath))
+    
+    
+    
+    
+    return variants
+    

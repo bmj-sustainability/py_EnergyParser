@@ -92,14 +92,14 @@ class IDFtests(unittest.TestCase):
         objTable = idf.get_table_all_names(testIDF)
         #printStdTable(objTable)
         cntTable = idf.get_table_object_count(testIDF)
-        print( testIDF.numObjects)
+        print( testIDF.num_objects)
         newIDF = testIDF + testIDF
 
-        #print testIDF.numObjects
-        #print newIDF.numObjects
-        #print testIDF.numObjects
+        #print testIDF.num_objects
+        #print newIDF.num_objects
+        #print testIDF.num_objects
         
-        #assert(newIDF.numObjects == testIDF.numObjects)
+        #assert(newIDF.num_objects == testIDF.num_objects)
         #printStdTable(cntTable)
         
 
@@ -139,10 +139,10 @@ class IDFtests(unittest.TestCase):
         #print idfGetZoneNameList(myIDF)
         #printStdTable(get_table_object_count(myIDF))
         #print keptClassesDict['onlyGeometry']
-        #print myIDF.numObjects
+        #print myIDF.num_objects
         idf.clean_out_object(myIDF, idf.keptClassesDict['onlyGeometry'])
-        #print myIDF.numObjects
-        assert(myIDF.numObjects == 224)
+        #print myIDF.num_objects
+        assert(myIDF.num_objects == 224)
         #printStdTable(get_table_object_count(myIDF))
 
 

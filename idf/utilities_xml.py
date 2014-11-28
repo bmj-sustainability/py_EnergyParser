@@ -1,26 +1,55 @@
+#!/usr/bin/env python
+#
+# EnergyParser
+# Copyright (c) 2011, B. Marcus Jones <>
+# All rights reserved.
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #===============================================================================
 # Set up
 #===============================================================================
-# Standard:
+
 from __future__ import division
 from __future__ import print_function
 
-from config import *
+#--- Standard library
+import re
+from collections import defaultdict # Python 2.7 has a better 'Counter'
+from copy import deepcopy
+import os
 
-import logging.config
-import unittest
+#--- Utilities
+from utility_print_table import PrettyTable
+from utilities_base import loggerCritical
+from utilities_base import force_list, xpathRE, clean_newlines, root_node, idStr
 
-from utility_inspect import whoami, whosdaddy, listObject
+#--- Third party
+from lxml import etree
+
+#--- Mine
+from idf_parser import IDF
+
+
 
 #===============================================================================
 # Logging
 #===============================================================================
-logging.config.fileConfig(ABSOLUTE_LOGGING_PATH)
+import logging
+#logging.config.fileConfig(ABSOLUTE_LOGGING_PATH)
 myLogger = logging.getLogger()
 myLogger.setLevel("DEBUG")
-
-
-
 
 #--- XML Utilities
 
@@ -54,63 +83,22 @@ def get_ATTR_position(IDDobj, className, XMLattribName, XMLattribValue):
     
     return position
 
-    
-def tree_get_class(IDFtree, classNameRegex, flgExact = True):
+def tree_get_class(idf_obj, classNameRegex, flgExact = True):
     """Returns a list of XML OBJECT nodes according to search of class name
     """
-    
+    IDFtree = idf_obj.XML
     #assert(isinstance(IDFtree,etree._ElementTree)), "Expected etree._Element, got {}".format(type(IDFtree))
     if flgExact:
         classNameRegex = "^" + classNameRegex + "$" 
     xpathSearch = "//CLASS[re:match(text(), '" + classNameRegex + "')]/.."
     queryElements = xpathRE(IDFtree,xpathSearch)
     queryElements = force_list(queryElements)
-
+    
     logging.debug('Search of {} {} hits in {}'.format(classNameRegex, len(queryElements),IDFtree))
     
     return queryElements
-    
-def xpathRE(tree, strXpath):
-    """
-    This function is just an alias for the etree.xpath function,
-    just to avoid having to always declare the namespace 're:'
-    """
-    return tree.xpath(strXpath, 
-        namespaces={"re": "http://exslt.org/regular-expressions"})
+#--- Printing
 
-#--- Introspection 
-
-def get_zone_name_list(IDFobj, zoneName='.'):
-    """ Return a list of zone names in the IDF object
-    """
-    with loggerCritical():
-        zoneElements = tree_get_class(IDFobj.XML, "^Zone$")
-    
-    names = list()
-    for zoneEl in zoneElements:
-        nameXml = zoneEl.xpath('ATTR') # Select ATTR
-        name = nameXml[0].text # It's the first ATTR
-        names.append(name)
-    
-    filteredNameList = [name for name in names if re.search(zoneName, name)]
-    
-    return filteredNameList
-
-def print_table(rows):
-    """Pretty print a table
-    """
-    headers = rows.pop(0)
-    alignments = rows.pop(0)
-    alignments = zip(headers, alignments)
-    theTable = PrettyTable(headers)
-    for align in alignments:
-        theTable.set_field_align(*align)
-    
-    for row in rows:
-        theTable.add_row(row)
-        
-    print theTable
-    
 def get_table_all_names(IDFobj):
     """Lists all objects, and their names (first ATTR)
     """
@@ -126,6 +114,7 @@ def get_table_all_names(IDFobj):
         tableRows.append((type[0].text, name[0].text))
 
     return tableHeader + tableAlign + sorted(tableRows)
+
 
 def get_table_object_count(IDFobj):
     
@@ -149,6 +138,96 @@ def get_table_object_count(IDFobj):
         tableRows.append(aPair)
 
     return tableHeader + tableAlign + sorted(tableRows)
+
+
+def print_table(rows, num_rows=None):
+    """Pretty print a table
+    """
+    headers = rows.pop(0)
+    alignments = rows.pop(0)
+    alignments = zip(headers, alignments)
+    theTable = PrettyTable(headers)
+    for align in alignments:
+        theTable.set_field_align(*align)
+    if num_rows:
+        for row in rows[0:num_rows]:
+            theTable.add_row(row)
+    else:
+        for row in rows:
+            theTable.add_row(row)        
+    print(theTable)
+    
+
+## {{{ http://code.activestate.com/recipes/137951/ (r1)
+def printDict(di, fmt="%-25s %s"):
+    for (key, val) in di.items():
+        print(fmt % (str(key)+':', val))
+
+
+def prettyPrintCols(strings, widths, split=' '):
+    """Pretty prints text in colums, with each string breaking at
+    split according to prettyPrint.  margins gives the corresponding
+    right breaking point."""
+
+    assert len(strings) == len(widths)
+
+    strings = map(clean_newlines, strings)
+
+    # pretty print each column
+    cols = [''] * len(strings)
+    for i in range(len(strings)):
+        cols[i] = prettyPrint(strings[i], widths[i], split)
+
+    # prepare a format line
+    format = ''.join(["%%-%ds" % width for width in widths[0:-1]]) + "%s"
+
+    def formatline(*cols):
+        return format % tuple(map(lambda s: (s or ''), cols))
+
+    # generate the formatted text
+    return '\n'.join(map(formatline, *cols))
+
+def printXML(theXMLtree):
+    print(etree.tostring(theXMLtree, pretty_print=True))
+
+def prettyPrint(string, maxlen=75, split=' '):
+    """Pretty prints the given string to break at an occurrence of
+    split where necessary to avoid lines longer than maxlen.
+
+    This will overflow the line if no convenient occurrence of split
+    is found"""
+
+    # Tack on the splitting character to guarantee a final match
+    string += split
+    
+    lines   = []
+    oldeol  = 0
+    eol     = 0
+    while not (eol == -1 or eol == len(string)-1):
+        eol = string.rfind(split, oldeol, oldeol+maxlen+len(split))
+        lines.append(string[oldeol:eol])
+        oldeol = eol + len(split)
+
+    return lines
+
+
+#--- Introspection 
+def get_zone_name_list(IDFobj, zoneName='.'):
+    """ Return a list of zone names in the IDF object
+    """
+    with loggerCritical():
+        zoneElements = tree_get_class(IDFobj, "^Zone$")
+    
+    names = list()
+    for zoneEl in zoneElements:
+        nameXml = zoneEl.xpath('ATTR') # Select ATTR
+        name = nameXml[0].text # It's the first ATTR
+        names.append(name)
+    
+    filteredNameList = [name for name in names if re.search(zoneName, name)]
+    
+    return filteredNameList
+
 
 
 #--- Assembly
@@ -179,7 +258,7 @@ def merge_xml(objectA, objectB):
                                               objectB.ID,
                                               int(len(BObjects)),
                                               mergedIDF.ID,
-                                              mergedIDF.numObjects,
+                                              mergedIDF.num_objects,
                                               ),
         mergedIDF.ID))
     
@@ -219,7 +298,7 @@ def apply_default_construction_names(IDFobj, IDDobj):
             surfaceConstructionName.text = "Exterior Floor"
             
         else:
-            print surfaceBoundaryCond
+            print(surfaceBoundaryCond)
             raise
         
     logging.debug(idStr("Applied dummy constructions to {} surfaces".format(len(surfaceObjs)),IDFobj.ID))
@@ -239,32 +318,30 @@ def apply_default_construction_names(IDFobj, IDDobj):
     #raise
     logging.debug(idStr("Applied dummy constructions to {} windows".format(len(surfaceObjs)),IDFobj.ID))
 
-    #pass
 
 def apply_change(IDFobj, IDDobj, change):
-    
-    with loggerCritical():
-        targetSelection = tree_get_class(IDDobj.XML, change['class'], True)
-        #printXML(targetSelection[0])
+    print(change)
+    #with loggerCritical():
+    targetSelection = tree_get_class(IDDobj, change['class'], True)
+
     assert targetSelection
     
-    with loggerCritical():
-        position = get_IDD_matched_position(targetSelection[0],"field",change['attr'])
-        
+    #with loggerCritical():
+    
+    position = get_IDD_matched_position(targetSelection[0],"field",change['attr'])
+        #(target_class,'field','Ceiling Height')
+    print(position)
+    
     assert position
     
     with loggerCritical():
-        targetSelection = tree_get_class(IDFobj.XML, change['class'], True)
+        targetSelection = tree_get_class(IDFobj, change['class'], True)
     
     # Match the NAME
     if len(targetSelection) > 1:
         #print targetSelection
         filteredSelection = list()
         #targetSelection = list()
-        
-        
-        
-        
         
         for cl in targetSelection:
             
@@ -293,9 +370,6 @@ def apply_change(IDFobj, IDDobj, change):
                                                                     change['attr'],
                                                                     change["objName"]
                                                                     )
-            #printXML(cl)
-        #print targetSelection
-        #raise
     
     numChanges = 0
     for thisClass in targetSelection:
@@ -313,7 +387,6 @@ def apply_change(IDFobj, IDDobj, change):
         
     
     logging.debug(idStr("Changed {} times: {} ".format(numChanges,change,),IDFobj.ID))
-    
     
     return IDFobj
 
@@ -403,11 +476,11 @@ def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No
                 try:
                     targetNameAttr[0].text = zoneName
                 except:
-                    print "Should {} really be multiplied?".format(objectClassName)
-                    print "Position: {}".format(position)
-                    print "zoneName: {}".format(zoneName)
-                    print "namePosition: {}".format(namePosition)
-                    printXML( classDef)
+                    print("Should {} really be multiplied?".format(objectClassName))
+                    print("Position: {}".format(position))
+                    print("zoneName: {}".format(zoneName))
+                    print("namePosition: {}".format(namePosition))
+                    printXML(classDef)
                     raise
                 #print targetNameAttr[0].text
                 #printXML(thisMultiplyObject)
@@ -446,15 +519,9 @@ def flg_IDD_has_field(IDDclass, label):
         return False 
 
 
-def get_IDD_matched_position(IDDclass,label,value):
-    #search = IDDclass.xpath("ATTR[@{}='{}']".format(label,value))
-    #objectName = IDDclass.xpath("CLASS")
-    #assert len(search) == 1, "Object {}, {} = {}, {} hits".format(objectName[0].text, label,value,len(search))
-    
-    #print printXML(IDDclass)
-    
-    #position  = IDDclass.xpath("count(./ATTR[@{}='{}']/preceding-sibling::*)".format(label,value))
-    
+def get_IDD_matched_position(IDDclass, label, value):
+    """Given the IDD class object, return the integer position of the attribue
+    """
     
     matchList = list()
     for attrMatch in IDDclass.xpath("./ATTR[@{}='{}']".format(label,value)):
@@ -479,7 +546,7 @@ def get_IDD_matched_position(IDDclass,label,value):
         #print logging.debug("Couldn't find {}={} in {}".format(label,value, IDDclass))
         #printXML(IDDclass)
         #raise Exception()
-        print "Couldn't find {}={} in {} ".format(label,value, IDDclass[0].text )
+        print("Couldn't find {}={} in {} ".format(label,value, IDDclass[0].text ))
         raise
     
     return matchList[0]
@@ -523,38 +590,6 @@ def get_template_path(templatePath, filterRegExString = ".", flgExact = True):
 #                
     raise Exception("Template {} not found in {}".format(filterRegExString,templatePath))
 
-def get_templates(templatePath, filterRegExString = ".", flgExact = True):
-    raise
-# This is just a filter for file names now...
-    """Given a path, return a list of matching IDF files, and load into IDF objects
-    """ 
-
-    templates = list()
-    if flgExact:
-        filterRegExString= "^" + filterRegExString + "$"
-
-    with loggerCritical():
-        for path in get_files_by_ext_recurse(templatePath, "idf"):
-            base=os.path.basename(path)
-            fileName = os.path.splitext(base)[0]
-            if  re.search(filterRegExString,fileName):
-                #print path
-                template=IDF.from_IDF_file(path,fileName)
-                #template.getTemplateInfo()
-                templates.append(template)
-    
-    # No duplicates!
-    assert(len(templates) == len(set(templates)))
-    assert len(templates)
-    
-#    assert(len(thisTemplate) == 1), "Template; {} found {} matches {}".format(templateDef['templateName'],
-#                    len(thisTemplate),thisTemplate)
-#    thisTemplate = thisTemplate[0]    
-        
-    
-    logging.debug("Found {} templates in {} filtered {}".format(len(templates),IDF_TEMPLATE_PATH, filterRegExString))
-    
-    return templates
 
 
 def clean_out_object(IDFobj,keptClassNames, flgExact = True):
@@ -588,7 +623,7 @@ def delete_classes(IDFobj, classNames, flgExact = True):
     for className in classNames:
         className = "^" + className + "$"
         
-        queryElements = tree_get_class(IDFobj.XML,className)
+        queryElements = tree_get_class(IDFobj,className)
 
         for object in queryElements:
             IDFobj.XML.remove(object)
@@ -643,101 +678,6 @@ def delete_classes_from_excel(IDFobj, IDDobj, delete):
 
     logging.debug(idStr("Deleted: {} objects".format(len(targetSelection)),IDFobj.ID))
 
-def load_cariants(inputExcelPath,path_idf_base):
-    
-    logging.debug("Loading variants from {0}".format(inputExcelPath))
-    
-    # Attach the book
-    book = ExcelBookRead(inputExcelPath)
-
-    # Select the sheet
-    variantsTable = book.get_table("(Variants)", startRow = 0, endRow=None, startCol=0, endCol=None)
-    try:
-        variantBlockLimits = [variantsTable.index(row) for row in variantsTable if row[0]]
-    except:
-        print(variantsTable)
-        raise
-    
-    variants = dict()
-    while len(variantBlockLimits) > 1:
-        startRow = variantBlockLimits[0]
-        endRow = variantBlockLimits[1]
-
-        #print "This variant table", 
-        variantBlockLimits.pop(0)
-        #print variantsTable
-        variantName = variantsTable[startRow][0]
-        logging.debug("Working on {} table, rows {} to {}".format(variantName,startRow, endRow))
-        
-        if variantName in variants:
-            raise Exception("Duplicate variant name {}".format(variantsTable[startRow][0]))
-        
-        rawTable = variantsTable[startRow:endRow]
-        description = rawTable[0][2]
-        
-        # Process source path
-        sourcePathDefinition = rawTable[0][3]
-        sourcePath = path_idf_base + sourcePathDefinition
-        
-        # Flags
-        flagIndices = [rawTable.index(row) for row in rawTable if row[1].strip() == "flag"]
-        flagDefs =  [{"flag":rawTable[ind][2],
-                "argument":rawTable[ind][3]}
-                for ind in flagIndices]
-                
-        # Deletes
-        deleteIndices = [rawTable.index(row) for row in rawTable if row[1].strip() == "del"]
-        deleteDefs =  [{"class":rawTable[ind][2],
-                "objName":rawTable[ind][3]}
-                for ind in deleteIndices]
-        
-        # Templates
-        templateIndices = [rawTable.index(row) for row in rawTable if row[1] == "tp"] 
-        templateDefs =  [{"templateName":rawTable[ind][2],
-                "zones":rawTable[ind][3],
-                "uniqueName":"{}".format(rawTable[ind][4])} 
-                for ind in templateIndices]
-        # Changes
-        changeIndices = [rawTable.index(row) for row in rawTable if row[1] == "ch"] 
-        changeDefs = [{"class":rawTable[ind][2],
-                "objName":rawTable[ind][3],
-                "attr":rawTable[ind][4],
-                "newVal":rawTable[ind][5],
-                } 
-                for ind in changeIndices]
-        
-              
-        variants[variantName] = {
-                                 "flags" : flagDefs,
-                                 "deletes" : deleteDefs,
-                                 "templates" : templateDefs,
-                                 "changes" : changeDefs,
-                                 "source" : sourcePath,
-                                 "description" : description,
-                                 
-                                 }
-    #print variants
-    for var in variants:
-        thisVar = variants[var]
-        logging.debug("      *** {:>5} - {:<50} *** ".format("Variant",var))
-        
-        logging.debug("{:>20} : {:<50}".format("templates",len(thisVar["templates"])))
-
-        logging.debug("{:>20} : {:<50}".format("flags",len(thisVar["flags"])))
-                      
-        logging.debug("{:>20} : {:<50}".format("deletes",len(thisVar["deletes"])))
-        logging.debug("{:>20} : {:<50}".format("changes",len(thisVar["changes"])))
-        logging.debug("{:>20} : {:<50}".format("description",thisVar["description"]))
-        logging.debug("{:>20} : {:<50}".format("source",thisVar["source"]))
-
-   
-    #print variants
-    logging.debug("Loaded {} variants from {}".format(len(variants),inputExcelPath))
-    
-    
-    
-    
-    return variants
 
 def short_string(theStr, length = 30):
     if len(theStr)<=length:
