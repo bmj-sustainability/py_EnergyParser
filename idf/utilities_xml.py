@@ -320,28 +320,20 @@ def apply_default_construction_names(IDFobj, IDDobj):
 
 
 def apply_change(IDFobj, IDDobj, change):
-    print(change)
-    #with loggerCritical():
-    targetSelection = tree_get_class(IDDobj, change['class'], True)
-
+    with loggerCritical():
+        targetSelection = tree_get_class(IDDobj, change['class'], False)
     assert targetSelection
     
-    #with loggerCritical():
-    
-    position = get_IDD_matched_position(targetSelection[0],"field",change['attr'])
-        #(target_class,'field','Ceiling Height')
-    print(position)
-    
+    with loggerCritical():
+        position = get_IDD_matched_position(targetSelection[0],"field",change['attr'])
     assert position
     
     with loggerCritical():
-        targetSelection = tree_get_class(IDFobj, change['class'], True)
+        targetSelection = tree_get_class(IDFobj, change['class'], False)
     
     # Match the NAME
     if len(targetSelection) > 1:
-        #print targetSelection
         filteredSelection = list()
-        #targetSelection = list()
         
         for cl in targetSelection:
             
@@ -354,17 +346,12 @@ def apply_change(IDFobj, IDDobj, change):
             xpathSearch = "ATTR[re:match(text(), '" + change["objName"] + "')]/.."
             
             matchedClass = xpathRE(cl,xpathSearch)
-            #print matchedClass
             if matchedClass:
                 filteredSelection.append(matchedClass[0])
 
             # Reset the name back to original
             cl[1].text = original_name
 
-                
-            #print thisClass
-        #printXML(cl)
-        #print xpathSearch
         targetSelection = filteredSelection          
         assert targetSelection, "Couldn't find {} - {} - {}".format(change['class'],
                                                                     change['attr'],
@@ -375,9 +362,6 @@ def apply_change(IDFobj, IDDobj, change):
     for thisClass in targetSelection:
         targetAttr = thisClass.xpath("ATTR[{}]".format(position))
         assert targetAttr
-        #printXML(targetAttr[0])
-        #logging.debug(idStr("Changing {} in {}, position {}".format(change['attr'],change['class'], position).format(change),IDFobj.ID))
-        
         
         targetAttr = targetAttr[0]
         if not isinstance(change['newVal'],str):
@@ -386,7 +370,7 @@ def apply_change(IDFobj, IDDobj, change):
         numChanges += 1
         
     
-    logging.debug(idStr("Changed {} times: {} ".format(numChanges,change,),IDFobj.ID))
+    logging.debug(idStr("Applied change {} times: \n{} ".format(numChanges,change,),IDFobj.ID))
     
     return IDFobj
 
