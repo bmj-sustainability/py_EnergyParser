@@ -1,0 +1,36 @@
+    def getTemplateInfo(self):
+        # NOT NEEDED ANYMORE ! ?
+        raise
+        lines = list()
+        
+        # Get all lines
+        for line in self.IDDstring.split('\n'):
+            lines.append(line)
+        
+        # Look for !!!
+        lineIndex = 0
+        jsonDefLines = list()
+        while (lineIndex < len(lines)) :
+            thisLine = lines[lineIndex]
+            if re.search(r"^!!!", thisLine,re.VERBOSE):
+                jsonDefLines.append(re.sub(r'!!!', '', thisLine))
+            lineIndex += 1
+        jsonDefString = "\n".join(jsonDefLines)
+        data = None
+#        if jsonDefLines:
+#            try:
+#                data = json.loads(jsonDefString)
+#            except:
+#                print jsonDefString
+#                raise
+#            # Split the name def! 
+#            try:
+#                nameDef = data["uniqueName"]
+#            except:
+#                print lines
+#                raise
+#            nameDef = re.split('=', nameDef)
+#            data["uniqueNameLoc"] =  nameDef[0].strip()
+#            data["uniqueName"] =  nameDef[1].strip()
+        self.templateDef = data
+    

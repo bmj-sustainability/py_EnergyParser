@@ -18,6 +18,17 @@ class loggerCritical:
         myLogger = logging.getLogger()
         myLogger.setLevel("DEBUG")
 
+#--- Utilities 
+def force_list(item):
+    """Forces item to be a list
+    """    
+    if not isinstance(item, list):
+        return [item]
+    else:
+        return item
+
+
+
 
 def genID(length=4, chars=string.letters + string.digits):
     return ''.join([choice(chars) for i in range(length)])

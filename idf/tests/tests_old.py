@@ -14,8 +14,8 @@ from utility_inspect import whoami, whosdaddy, listObject
 from utility_path import split_up_path 
 # Testing imports
 #from ..IDF import IDF
-import idf.idf_parse as idf
-from idf.utilities import printXML
+import idf.idf_parser as idf
+from idf.utilities_base import printXML
 from UtilityLogger import loggerCritical
 
 #get_table_all_names
@@ -54,7 +54,7 @@ class IDDTests(unittest.TestCase):
 
         testIDD = idf.idf_parse.from_IDD_file(self.pathIDDfull)
 
-        testIDD.writeXml(r"c:\\temp\\test.xml")
+        testIDD.write_XML(r"c:\\temp\\test.xml")
         
         for item in idf.tree_get_class(testIDD.XML,"Vers",False):
             printXML(item)
@@ -219,7 +219,7 @@ class MyTest(unittest.TestCase):
         testPath = r"C:\Users\Anonymous2\Desktop\TestIDF.txt"
         testPathOUT = r"C:\Users\Anonymous2\Desktop\TestIDF.xml"
         IDFobj = idf.idf_parse.from_IDF_file(testPath)
-        IDFobj.writeXml(testPathOUT)
+        IDFobj.write_XML(testPathOUT)
         
         raise
         print( IDDobj)
@@ -240,4 +240,4 @@ class JustForCentralDELETEORPHANS(unittest.TestCase):
         osmFileOut = r"C:\Users\Anonymous2\Desktop\SKPOSM\Cleaned.osm"
         IDFobj = idf.idf_parse.from_IDF_file(osmFilePath) 
         idf.delete_orphaned_zones(IDFobj)
-        IDFobj.writeIdf(osmFileOut)
+        IDFobj.write_IDF(osmFileOut)
