@@ -11,7 +11,7 @@ import logging.config
 import unittest
 
 from utility_inspect import whoami, whosdaddy, listObject
-from utility_path import split_up_path 
+from utility_pathOLD import split_up_path 
 # Testing imports
 #from ..IDF import IDF
 import idf.idf_parser as idf

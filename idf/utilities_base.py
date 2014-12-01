@@ -25,9 +25,9 @@ from lxml import etree
 
 #import copy
 
-#from utility_excel import ExcelBookRead
+#from utility_excelOLD import ExcelBookRead
 #from UtilityXML import printXML
-#from utility_path import split_up_path, get_files_by_ext_recurse
+#from utility_pathOLD import split_up_path, get_files_by_ext_recurse
 
 import pprint as pprint
 pp = pprint.PrettyPrinter(indent=4)
