@@ -5,18 +5,16 @@ The raison d'etre of EnergyParser is to capitalize on the XML standard, a widely
 Releasing under open source GPL3.
 
 Features:
-1. Round trip parsing IDF <-> XML
-
-2. Native regular expression support in object manipulation for complex selections
-
-3. Full XML support through the popular 'lxml' module including EXtensible Stylesheet Language (XSLT) pipeline manipulation
-4. Utility functions for common IDF operations
-    - List objects
-    - Selections based on class or attribute regex string search
-    - Update and modify based on IDD  attribute search
-    - Merge XML trees
-    - Delete classes
-    - Write to IDF or XML
+- Round trip parsing IDF <-> XML
+- Native regular expression support in object manipulation for complex selections
+- Full XML support through the popular 'lxml' module including EXtensible Stylesheet Language (XSLT) pipeline manipulation
+- Utility functions for common IDF operations
+  * List objects
+  * Selections based on class or attribute regex string search
+  * Update and modify based on IDD  attribute search
+  * Merge XML trees
+  * Delete classes
+  * Write to IDF or XML
 
 Examples and help:
 http://nbviewer.ipython.org/github/MarcusJones/EnergyParser/blob/master/Help/00%20EnergyParser-checkpoint.ipynb
