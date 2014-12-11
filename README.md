@@ -6,7 +6,9 @@ Releasing under open source GPL3.
 
 Features:
 1. Round trip parsing IDF <-> XML
+
 2. Native regular expression support in object manipulation for complex selections
+
 3. Full XML support through the popular 'lxml' module including EXtensible Stylesheet Language (XSLT) pipeline manipulation
 4. Utility functions for common IDF operations
     - List objects
