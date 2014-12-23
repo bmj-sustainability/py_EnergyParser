@@ -10,7 +10,7 @@ from config import *
 import logging.config
 import unittest
 
-from utility_inspect import whoami, whosdaddy, listObject
+#from utility_inspect import whoami,  listObject
 
 #===============================================================================
 # Logging
