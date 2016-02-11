@@ -81,7 +81,7 @@ class IDF(object):
         # Call convert
         thisClass.parse_IDF_to_XML()
         # Return this class
-
+        #print("TEST")
         logging.debug(idStr('Created an IDF object named {}, with {} objects'.format(
                                                                                thisClass.ID,
                                                                                thisClass.num_objects,

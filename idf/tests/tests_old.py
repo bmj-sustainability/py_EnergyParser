@@ -10,12 +10,12 @@ from config import *
 import logging.config
 import unittest
 
-from utility_inspect import whoami, whosdaddy, listObject
-from utility_pathOLD import split_up_path 
+from ExergyUtilities.utility_inspect import get_self
+#from utility_pathOLD import split_up_path 
 # Testing imports
 #from ..IDF import IDF
 import idf.idf_parser as idf
-from idf.utilities_base import printXML
+from idf.utilities_xml import printXML
 from UtilityLogger import loggerCritical
 
 #get_table_all_names
@@ -32,7 +32,7 @@ myLogger.setLevel("DEBUG")
 #===============================================================================
 class IDDTests(unittest.TestCase):
     def setUp(self):
-        print("**** TEST {} ****".format(whoami()))
+        print("**** TEST {} ****".format(get_self()))
         currentPath = split_up_path(__file__)
         projectRootPath = currentPath[:-4]
         sampleFileDir = ["SampleIDFs"]
@@ -45,12 +45,12 @@ class IDDTests(unittest.TestCase):
         self.pathIDDfull = os.path.join(*pathIDDsample2)
         
     def test010_IDDSample(self):
-        print( "**** TEST {} ****".format(whoami()))
+        print( "**** TEST {} ****".format(get_self()))
         testIDD = idf.idf_parse.from_IDD_file(self.pathIDDsample)
         printXML(testIDD.XML)
         
     def test020_IDD_FULL(self):
-        print( "**** TEST {} ****".format(whoami()))
+        print( "**** TEST {} ****".format(get_self()))
 
         testIDD = idf.idf_parse.from_IDD_file(self.pathIDDfull)
 
@@ -62,7 +62,7 @@ class IDDTests(unittest.TestCase):
 class IDFtests(unittest.TestCase):
     
     def setUp(self):
-        print( "**** TEST {} ****".format(whoami()))
+        print( "**** TEST {} ****".format(get_self()))
         currentPath = split_up_path(__file__)
 
         thisProjRoot = split_up_path(os.getcwd())[:4] 
@@ -82,7 +82,7 @@ class IDFtests(unittest.TestCase):
 
         
     def test010_SimpleCreation(self):
-        print( "**** TEST {} ****".format(whoami()))
+        print( "**** TEST {} ****".format(get_self()))
         
         testIDF = idf.idf_parse.from_IDF_file(self.path_5Zone)
         #print testIDF
@@ -104,7 +104,7 @@ class IDFtests(unittest.TestCase):
         
 
     def test020_checkTemplates(self):
-        print( "**** TEST {} ****".format(whoami()))
+        print( "**** TEST {} ****".format(get_self()))
 
         templates = idf.loadTemplates(IDF_TEMPLATE_PATH)
         
@@ -131,7 +131,7 @@ class IDFtests(unittest.TestCase):
         variants = idf.load_cariants(self.thisTestExcelProj)
         
     def test040_cleanObjects(self):
-        print( "**** TEST {} ****".format(whoami()))
+        print( "**** TEST {} ****".format(get_self()))
         myIDF = idf.idf_parse.from_IDF_file(self.path_CentralTower)
         #printStdTable(get_table_object_count(myIDF))
         
@@ -148,7 +148,7 @@ class IDFtests(unittest.TestCase):
 
         
     def test050_applyTemplates(self):
-        print( "**** TEST {} ****".format(whoami()))
+        print( "**** TEST {} ****".format(get_self()))
         variants = idf.load_cariants(self.thisTestExcelProj)
         
         # Customize for test
@@ -170,11 +170,11 @@ class IDFtests(unittest.TestCase):
         
 
     def test0X0_XXX(self):
-        print( "**** TEST {} ****".format(whoami()))
+        print( "**** TEST {} ****".format(get_self()))
 
 class TemplateTtests(unittest.TestCase):
     def setUp(self):
-        print( "**** TEST {} ****".format(whoami()))
+        print( "**** TEST {} ****".format(get_self()))
         #currentPath = split_up_path(__file__)
         thisProjRoot = split_up_path(os.getcwd())[:4] 
         
@@ -196,7 +196,7 @@ class TemplateTtests(unittest.TestCase):
         self.path_IDD_XML = os.path.join(*path_IDD_XML)
         
     def test050_applyTemplates(self):
-        print( "**** TEST {} ****".format(whoami()))
+        print( "**** TEST {} ****".format(get_self()))
         
         IDDobj = idf.idf_parse.from_XML_file(self.path_IDD_XML)
         print( IDDobj)
@@ -215,7 +215,7 @@ class TemplateTtests(unittest.TestCase):
 
 class MyTest(unittest.TestCase):
     def test050_applyTemplates(self):
-        print( "**** TEST {} ****".format(whoami()))
+        print( "**** TEST {} ****".format(get_self()))
         testPath = r"C:\Users\Anonymous2\Desktop\TestIDF.txt"
         testPathOUT = r"C:\Users\Anonymous2\Desktop\TestIDF.xml"
         IDFobj = idf.idf_parse.from_IDF_file(testPath)
@@ -235,7 +235,7 @@ class MyTest(unittest.TestCase):
 
 class JustForCentralDELETEORPHANS(unittest.TestCase):
     def test050_applyTemplates(self):
-        print( "**** TEST {} ****".format(whoami()))
+        print( "**** TEST {} ****".format(get_self()))
         osmFilePath = r"C:\Users\Anonymous2\Desktop\SKPOSM\Main r04.osm"
         osmFileOut = r"C:\Users\Anonymous2\Desktop\SKPOSM\Cleaned.osm"
         IDFobj = idf.idf_parse.from_IDF_file(osmFilePath) 

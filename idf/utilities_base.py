@@ -66,7 +66,7 @@ def force_list(item):
     else:
         return item
 
-def gen_ID(length=4, chars=string.letters + string.digits):
+def gen_ID(length=4, chars=string.ascii_letters + string.digits):
     return ''.join([choice(chars) for i in range(length)])
 
 def idStr(commentString, IDstring='BLANKID'):
