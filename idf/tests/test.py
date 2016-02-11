@@ -2,15 +2,15 @@
 # Set up
 #===============================================================================
 # Standard:
-from __future__ import division
-from __future__ import print_function
 
-from config import *
+
+
+from config.config import *
 
 import logging.config
 import unittest
 
-#from utility_inspect import whoami,  listObject
+from ExergyUtilities.utility_inspect import get_self
 
 #===============================================================================
 # Logging
@@ -25,11 +25,11 @@ myLogger.setLevel("DEBUG")
 
 class DesignSpaceBasicTests(unittest.TestCase):
     def setUp(self):
-        #print "**** TEST {} ****".format(whoami())
+        #print "**** TEST {} ****".format(get_self())
         myLogger.setLevel("CRITICAL")
         print("Setup")
         myLogger.setLevel("DEBUG")
 
     def test010_SimpleCreation(self):
-        print("**** TEST {} ****".format(whoami()))
+        print("**** TEST {} ****".format(get_self()))
 

@@ -120,7 +120,7 @@ def frange(start, end=None, inc=None):
         count += 1
     count += 1
     L = [None,] * count 
-    for i in xrange(count):
+    for i in range(count):
         L[i] = start + i * inc
         
     return L
@@ -159,7 +159,7 @@ def iter_islast(iterable):
     """
 
     it = iter(iterable)
-    prev = it.next()
+    prev = next(it)
     for item in it:
         yield prev, False
         prev = item

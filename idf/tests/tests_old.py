@@ -2,8 +2,8 @@
 # Set up
 #===============================================================================
 # Standard:
-from __future__ import division
-from __future__ import print_function
+
+
 
 from config import *
 
@@ -152,10 +152,10 @@ class IDFtests(unittest.TestCase):
         variants = idf.load_cariants(self.thisTestExcelProj)
         
         # Customize for test
-        myVariant = variants.itervalues().next()
+        myVariant = next(iter(variants.values()))
         #pPrint(myVariant)
         myVariant["source"] = self.path_CentralTower
-        myVariant["templates"] = [{'templateName': u'Generic lights', 'zones': u'.'}]
+        myVariant["templates"] = [{'templateName': 'Generic lights', 'zones': '.'}]
         myVariants = [myVariant]
         
         #assemble_variants(myVariants)
@@ -203,10 +203,10 @@ class TemplateTtests(unittest.TestCase):
         variants = idf.load_cariants(self.thisTestExcelProj)
 
         # Customize for test
-        myVariant = variants.itervalues().next() # Get one variant
+        myVariant = next(iter(variants.values())) # Get one variant
         #pprint((myVariant)#
         myVariant["source"] = self.path_CentralTower # Update source
-        myVariant["templates"] = [{'templateName': u'Generic lights', 'zones': u'.'}] # Only one template
+        myVariant["templates"] = [{'templateName': 'Generic lights', 'zones': '.'}] # Only one template
         myVariants = [myVariant]
         
 
@@ -226,10 +226,10 @@ class MyTest(unittest.TestCase):
         variants = idf.load_cariants(self.thisTestExcelProj)
 
         # Customize for test
-        myVariant = variants.itervalues().next() # Get one variant
+        myVariant = next(iter(variants.values())) # Get one variant
         #pprint((myVariant)#
         myVariant["source"] = self.path_CentralTower # Update source
-        myVariant["templates"] = [{'templateName': u'Generic lights', 'zones': u'.'}] # Only one template
+        myVariant["templates"] = [{'templateName': 'Generic lights', 'zones': '.'}] # Only one template
         myVariants = [myVariant]        
          
 

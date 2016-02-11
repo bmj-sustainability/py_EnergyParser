@@ -17,8 +17,6 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import division    
-
 #--- Standard
 import re
 import logging
@@ -166,7 +164,7 @@ class IDF(object):
 
     def print_template_def(self):
         try:
-            print self.templateDef
+            print(self.templateDef)
         except:
             raise Exception("Template not defined")
         
@@ -406,7 +404,7 @@ class IDF(object):
                         try:
                             thisATTRXML.set(tokens["fldName"], tokens["fldText"])
                         except:
-                            print tokens
+                            print(tokens)
                             raise
                     
                 if "flgEnd" in tokens:
@@ -477,7 +475,7 @@ class IDF(object):
                 try: 
                     values,comment = re.split(r"!", thisLine,re.VERBOSE, 1)
                 except:
-                    print re.split(r"!", thisLine,re.VERBOSE)
+                    print(re.split(r"!", thisLine,re.VERBOSE))
                     raise Exception("Maybe a line with 2 ! ? Try to catch these before")
                 comment = comment.rstrip()
                 comment = comment.lstrip()                

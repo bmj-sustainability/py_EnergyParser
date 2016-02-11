@@ -21,8 +21,8 @@
 # Set up
 #===============================================================================
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 #--- Standard library
 import re
@@ -31,15 +31,15 @@ from copy import deepcopy
 import os
 
 #--- Utilities
-from utility_print_table import PrettyTable
-from utilities_base import loggerCritical
-from utilities_base import force_list, xpathRE, clean_newlines, root_node, idStr
+from .utility_print_table import PrettyTable
+from .utilities_base import loggerCritical
+from .utilities_base import force_list, xpathRE, clean_newlines, root_node, idStr
 
 #--- Third party
 from lxml import etree
 
 #--- Mine
-from idf_parser import IDF
+from .idf_parser import IDF
 
 
 
@@ -130,7 +130,7 @@ def get_table_object_count(IDFobj):
     tableAlign = [("r", "l")]
     tableRows = list()
 
-    for pairs in d.items():
+    for pairs in list(d.items()):
         classType = pairs[0],
         classType = classType[0]
         classCount = pairs[1]
@@ -145,7 +145,7 @@ def print_table(rows, num_rows=None):
     """
     headers = rows.pop(0)
     alignments = rows.pop(0)
-    alignments = zip(headers, alignments)
+    alignments = list(zip(headers, alignments))
     theTable = PrettyTable(headers)
     for align in alignments:
         theTable.set_field_align(*align)
@@ -160,7 +160,7 @@ def print_table(rows, num_rows=None):
 
 ## {{{ http://code.activestate.com/recipes/137951/ (r1)
 def printDict(di, fmt="%-25s %s"):
-    for (key, val) in di.items():
+    for (key, val) in list(di.items()):
         print(fmt % (str(key)+':', val))
 
 
@@ -171,7 +171,7 @@ def prettyPrintCols(strings, widths, split=' '):
 
     assert len(strings) == len(widths)
 
-    strings = map(clean_newlines, strings)
+    strings = list(map(clean_newlines, strings))
 
     # pretty print each column
     cols = [''] * len(strings)
@@ -182,7 +182,7 @@ def prettyPrintCols(strings, widths, split=' '):
     format = ''.join(["%%-%ds" % width for width in widths[0:-1]]) + "%s"
 
     def formatline(*cols):
-        return format % tuple(map(lambda s: (s or ''), cols))
+        return format % tuple([(s or '') for s in cols])
 
     # generate the formatted text
     return '\n'.join(map(formatline, *cols))
