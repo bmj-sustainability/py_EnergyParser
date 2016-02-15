@@ -1,12 +1,22 @@
 #===============================================================================
-# Set up
+# Set up 
 #===============================================================================
-# Standard:
+
+# Standard ----------------------------------------------------------------------
 import os.path as path
 from shutil import copyfile
 import logging.config
 import unittest
+import sys
 
+# Get self path
+script_path = path.split(path.realpath(__file__))[0]
+# Adjust to add the module path
+module_path = path.normpath( script_path + "/.."  + "/idf")
+# Add it 
+sys.path.append(module_path)
+
+#------------------------------------------------------------------------------ 
 # Config
 from config.config import *
 
