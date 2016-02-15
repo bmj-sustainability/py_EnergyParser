@@ -31,15 +31,15 @@ from copy import deepcopy
 import os
 
 #--- Utilities
-from .utility_print_table import PrettyTable
-from .utilities_base import loggerCritical
-from .utilities_base import force_list, xpathRE, clean_newlines, root_node, idStr
+from utility_print_table import PrettyTable
+from utilities_base import loggerCritical
+from utilities_base import force_list, xpathRE, clean_newlines, root_node, idStr
 
 #--- Third party
 from lxml import etree
 
 #--- Mine
-from .idf_parser import IDF
+from idf_parser import IDF
 
 
 

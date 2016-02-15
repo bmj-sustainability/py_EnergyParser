@@ -5,6 +5,18 @@ Expressed as a dict containing sets of class names
 #from ProjectScripts.generate_variants import *
 
 keptClassesDict =  {
+                    
+        'TRNSYS' :  set([
+                         'Building'
+                         'Zone',
+                         'BuildingSurface:Detailed',                            
+                         'FenestrationSurface:Detailed',
+                         'SurfaceProperty:OtherSideCoefficients',
+                         'GlobalGeometryRules',
+                         'Construction',
+                         'WindowProperty:ShadingControl'
+                         ]),
+        
         'MoreClassesTEMP' : set([
                           # Geometry ##################
                           'Zone',                          

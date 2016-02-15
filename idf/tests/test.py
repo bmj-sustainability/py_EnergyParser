@@ -3,21 +3,20 @@
 #===============================================================================
 # Standard:
 
-
-
-from config.config_template import *
+from config.config import *
 
 import logging.config
 import unittest
 
 from ExergyUtilities.utility_inspect import get_self
-from idf.utilities_xml import get_table_all_names, print_table
-from idf.idf_parser import IDF
+from utilities_xml import get_table_all_names, print_table
+from idf_parser import IDF
 import os.path as path
 
 #===============================================================================
 # Logging
 #===============================================================================
+print(ABSOLUTE_LOGGING_PATH)
 logging.config.fileConfig(ABSOLUTE_LOGGING_PATH)
 myLogger = logging.getLogger()
 myLogger.setLevel("DEBUG")
@@ -25,7 +24,7 @@ myLogger.setLevel("DEBUG")
 #===============================================================================
 # Unit testing
 #===============================================================================
-
+print("Test")
 class BasicTest(unittest.TestCase):
     def setUp(self):
         #print "**** TEST {} ****".format(get_self())
