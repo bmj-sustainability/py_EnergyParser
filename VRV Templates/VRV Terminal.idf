@@ -1,0 +1,59 @@
+!-   ===========  ALL OBJECTS IN CLASS: ZONEHVAC:TERMINALUNIT:VARIABLEREFRIGERANTFLOW ===========
+
+ZoneHVAC:TerminalUnit:VariableRefrigerantFlow,
+    *ZONENAME* Terminal Unit,    !- Zone Terminal Unit Name
+    VRFAvailSched,           !- Terminal Unit Availability schedule
+    *ZONENAME* N Outlet,            !- Terminal Unit Air Inlet Node Name
+    *ZONENAME* N Inlet,             !- Terminal Unit Air Outlet Node Name
+    autosize,                !- Supply Air Flow Rate During Cooling Operation {m3/s}
+    autosize,                !- Supply Air Flow Rate When No Cooling is Needed {m3/s}
+    autosize,                !- Supply Air Flow Rate During Heating Operation {m3/s}
+    autosize,                !- Supply Air Flow Rate When No Heating is Needed {m3/s}
+    autosize,                !- Outdoor Air Flow Rate During Cooling Operation {m3/s}
+    autosize,                !- Outdoor Air Flow Rate During Heating Operation {m3/s}
+    autosize,                !- Outdoor Air Flow Rate When No Cooling or Heating is Needed {m3/s}
+    VRF Fan Sched,          !- Supply Air Fan Operating Mode Schedule Name
+    drawthrough,             !- Supply Air Fan placement
+    Fan:ConstantVolume,      !- Supply Air Fan Object Type
+    *ZONENAME* VRF Supply Fan,      !- Supply Air Fan Object Name
+    ,                        !- Outside Air Mixer Object Type
+    ,                        !- Outside Air Mixer Object Name
+    COIL:Cooling:DX:VariableRefrigerantFlow,  !- Cooling Coil Object Type
+    *ZONENAME* VRF DX Cooling Coil, !- Cooling Coil Object Name
+    COIL:Heating:DX:VariableRefrigerantFlow,  !- Heating Coil Object Type
+    *ZONENAME* VRF DX Heating Coil, !- Heating Coil Object Name
+    30,                      !- Zone Terminal Unit On Parasitic Electric Energy Use {W}
+    20;                      !- Zone Terminal Unit Off Parasitic Electric Energy Use {W}
+	
+Fan:ConstantVolume,
+    *ZONENAME* VRF Supply Fan,      !- Name
+    VRF Fan Sched,           !- Availability Schedule Name
+    0.7,                     !- Fan Efficiency
+    600.0,                   !- Pressure Rise {Pa}
+    autosize,                !- Maximum Flow Rate {m3/s}
+    0.9,                     !- Motor Efficiency
+    1.0,                     !- Motor In Airstream Fraction
+    *ZONENAME* N VRF HCoil Outlet,  !- Air Inlet Node Name
+    *ZONENAME* N Inlet;             !- Air Outlet Node Name
+
+Coil:Heating:DX:VariableRefrigerantFlow,
+    *ZONENAME* VRF DX Heating Coil, !- Name
+    VRFAvailSched,           !- Availability Schedule
+    autosize,                !- Rated Total Heating Capacity {W}
+    autosize,                !- Rated Air Flow Rate {m3/s}
+    *ZONENAME* N VRF CCoil Outlet,  !- Coil Air Inlet Node
+    *ZONENAME* N VRF HCoil Outlet,  !- Coil Air Outlet Node
+    VRFTUHeatCapFT,          !- Heating Capacity Ratio Modifier Function of Temperature Curve Name
+    VRFACCoolCapFFF;         !- Heating Capacity Modifier Function of Flow Fraction Curve Name
+
+Coil:Cooling:DX:VariableRefrigerantFlow,
+    *ZONENAME* VRF DX Cooling Coil, !- Name
+    VRFAvailSched,           !- Availability Schedule Name
+    autosize,                !- Rated Total Cooling Capacity {W}
+    autosize,                !- Rated Sensible Heat Ratio
+    autosize,                !- Rated Air Flow Rate {m3/s}
+    VRFTUCoolCapFT,          !- Cooling Capacity Ratio Modifier Function of Temperature Curve Name
+    VRFACCoolCapFFF,         !- Cooling Capacity Modifier Curve Function of Flow Fraction Name
+    *ZONENAME* N Outlet,            !- Coil Air Inlet Node
+    *ZONENAME* N VRF CCoil Outlet;  !- Coil Air Outlet Node
+	

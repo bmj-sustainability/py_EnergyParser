@@ -1,0 +1,47 @@
+  ZoneHVAC:EquipmentConnections,
+    *ZONENAME*,                !- Zone Name
+    *ZONENAME* Equipment,             !- Zone Conditioning Equipment List Name
+    *ZONENAME* N HVAC Inlet,       !- Zone Air Inlet Node or NodeList Name
+    *ZONENAME* N HVAC Outlet,      !- Zone Air Exhaust Node or NodeList Name
+    *ZONENAME* N Zone Air,           !- Zone Air Node Name
+    *ZONENAME* N HVAC Return;       !- Zone Return Air Node Name
+
+  ZoneHVAC:EquipmentList,
+    *ZONENAME* Equipment;             !- Name
+!    ZoneHVAC:TerminalUnit:VariableRefrigerantFlow;  !- Zone Equipment 1 Object Type
+!    TU1,                     !- Zone Equipment 1 Name
+!    1,                       !- Zone Equipment 1 Cooling Sequence
+!    1;                       !- Zone Equipment 1 Heating or No-Load Sequence
+
+
+  Sizing:Zone,
+    *ZONENAME*,                !- Zone or ZoneList Name
+    SupplyAirTemperature,    !- Zone Cooling Design Supply Air Temperature Input Method
+    12.5,                    !- Zone Cooling Design Supply Air Temperature {C}
+    ,                        !- Zone Cooling Design Supply Air Temperature Difference {delta C}
+    SupplyAirTemperature,    !- Zone Heating Design Supply Air Temperature Input Method
+    50.,                     !- Zone Heating Design Supply Air Temperature {C}
+    ,                        !- Zone Heating Design Supply Air Temperature Difference {deltaC}
+    0.009,                   !- Zone Cooling Design Supply Air Humidity Ratio {kgWater/kgDryAir}
+    0.004,                   !- Zone Heating Design Supply Air Humidity Ratio {kgWater/kgDryAir}
+    *ZONENAME* OA sizing,        !- Design Specification Outdoor Air Object Name
+    0.0,                     !- Zone Heating Sizing Factor
+    0.0,                     !- Zone Cooling Sizing Factor
+    DesignDay,               !- Cooling Design Air Flow Method
+    0,                       !- Cooling Design Air Flow Rate {m3/s}
+    ,                        !- Cooling Minimum Air Flow per Zone Floor Area {m3/s-m2}
+    ,                        !- Cooling Minimum Air Flow {m3/s}
+    ,                        !- Cooling Minimum Air Flow Fraction
+    DesignDay,               !- Heating Design Air Flow Method
+    0,                       !- Heating Design Air Flow Rate {m3/s}
+    ,                        !- Heating Maximum Air Flow per Zone Floor Area {m3/s-m2}
+    ,                        !- Heating Maximum Air Flow {m3/s}
+    ;                        !- Heating Maximum Air Flow Fraction
+
+  DesignSpecification:OutdoorAir,
+    *ZONENAME* OA sizing,        !- Name
+    Sum,                     !- Outdoor Air Method
+    0.00472,                 !- Outdoor Air Flow per Person {m3/s-person}
+    0.000508,                !- Outdoor Air Flow per Zone Floor Area {m3/s-m2}
+    0.0;                     !- Outdoor Air Flow per Zone {m3/s}
+	

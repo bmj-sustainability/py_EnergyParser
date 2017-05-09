@@ -1,0 +1,88 @@
+! Variable Refrigerant Flow (VRF) Heat Pump
+! Mitsubishi PURY-P108TGMU
+! Nominal Cooling Capacity = 31.7 kW
+! Nominal Cooling Power Input = 9.63 (Cooling COP = 3.2917)
+! Nominal Heating Capacity = 35.2 kW
+! Nominal Power Input = 9.92 kW (Heating COP = 3.5484)
+
+  AirConditioner:VariableRefrigerantFlow,
+    *TERMINAL UNIT AA*,           !- Heat Pump Name
+    VRFCondAvailSched,       !- Availability Schedule Name
+    autosize,                !- Rated Total Cooling Capacity {W}
+    3.2917,                  !- Rated Cooling COP {W/W}
+    -5,                      !- Minimum Outdoor Temperature in Cooling Mode {C}
+    43,                      !- Maximum Outdoor Temperature in Cooling Mode {C}
+    VRFCoolCapFT,            !- Cooling Capacity Ratio Modifier Function of Low Temperature Curve Name
+    VRFCoolCapFTBoundary,    !- Cooling Capacity Ratio Boundary Curve Name
+    VRFCoolCapFTHi,          !- Cooling Capacity Ratio Modifier Function of High Temperature Curve Name
+    VRFCoolEIRFT,            !- Cooling Energy Input Ratio Modifier Function of Low Temperature Curve Name
+    VRFCoolEIRFTBoundary,    !- Cooling Energy Input Ratio Boundary Curve Name
+    VRFCoolEIRFTHi,          !- Cooling Energy Input Ratio Modifier Function of High Temperature Curve Name
+    CoolingEIRLowPLR,        !- Cooling Energy Input Ratio Modifier Function of Low Part-Load Ratio Curve Name
+    CoolingEIRHiPLR,         !- Cooling Energy Input Ratio Modifier Function of High Part-Load Ratio Curve Name
+    CoolingCombRatio,        !- Cooling Combination Ratio Correction Factor Curve Name
+    VRFCPLFFPLR,             !- Cooling Part-Load Fraction Correlation Curve Name
+    autosize,                !- Rated Total Heating Capacity {W}
+    ,                        !- Rated Total Heating Capacity Sizing Ratio [W/W]
+    3.5484,                  !- Rated Heating COP {W/W}
+    -20,                     !- Minimum Outdoor Temperature in Heating Mode {C}
+    20,                      !- Maximum Outdoor Temperature in Heating Mode {C}
+    VRFHeatCapFT,            !- Heating Capacity Ratio Modifier Function of Low Temperature Curve Name
+    VRFHeatCapFTBoundary,    !- Heating Capacity Ratio Boundary Curve Name
+    VRFHeatCapFTHi,          !- Heating Capacity Ratio Modifier Function of High Temperature Curve Name
+    VRFHeatEIRFT,            !- Heating Energy Input Ratio Modifier Function of Low Temperature Curve Name
+    VRFHeatEIRFTBoundary,    !- Heating Energy Input Ratio Boundary Curve Name
+    VRFHeatEIRFTHi,          !- Heating Energy Input Ratio Modifier Function of High Temperature Curve Name
+    WetBulbTemperature,      !- Heating Performance Curve Outdoor Temperature Type
+    HeatingEIRLowPLR,        !- Heating Energy Input Ratio Modifier Function of Low Part-Load Ratio Curve Name
+    HeatingEIRHiPLR,         !- Heating Energy Input Ratio Modifier Function of High Part-Load Ratio Curve Name
+    HeatingCombRatio,        !- Heating Combination Ratio Correction Factor Curve Name
+    VRFCPLFFPLR,             !- Heating Part-Load Fraction Correlation Curve Name
+    0.25,                    !- Minimum Heat Pump Part-Load Ratio
+    SPACE1-1,                !- Zone Name for Master Thermostat Location
+    LoadPriority,            !- Master Thermostat Priority Control Type
+    ,                        !- Thermostat Priority Schedule Name
+    *TERMINAL UNIT AA* List,   !- Zone Terminal Unit List Name
+    No,                      !- Heat Pump Waste Heat Recovery
+    30,                      !- Equivalent Piping Length used for Piping Correction Factor in Cooling Mode {m}
+    10,                      !- Vertical Height used for Piping Correction Factor {m}
+    CoolingLengthCorrectionFactor,  !- Piping Correction Factor for Length in Cooling Mode Curve Name
+    -0.000386,               !- Piping Correction Factor for Height in Cooling Mode Coefficient
+    30,                      !- Equivalent Piping Length used for Piping Correction Factor in Heating Mode {m}
+    ,                        !- Piping Correction Factor for Length in Heating Mode Curve Name
+    ,                        !- Piping Correction Factor for Height in Heating Mode Coefficient
+    15,                      !- Crankcase Heater Power per Compressor {W}
+    3,                       !- Number of Compressors
+    0.33,                    !- Ratio of Compressor Size to Total Compressor Capacity
+    7,                       !- Maximum Outdoor Dry-bulb Temperature for Crankcase Heater {C}
+    Resistive,               !- Defrost Strategy
+    Timed,                   !- Defrost Control
+    ,                        !- Defrost Energy Input Ratio Modifier Function of Temperature Curve Name
+    ,                        !- Defrost Time Period Fraction
+    0.0000001,               !- Resistive Defrost Heater Capacity {W}
+    7,                       !- Maximum Outdoor Dry-bulb Temperature for Defrost Operation {C}
+    AirCooled,               !- Condenser Type
+    *TERMINAL UNIT AA* Outdoor Air N List,             !- Condenser Inlet Node Name
+    ,                        !- Condenser Outlet Node Name
+    ,                        !- Water Condenser Volume Flow Rate
+    ,                        !- Evaporative Condenser Effectiveness {dimensionless}
+    ,                        !- Evaporative Condenser Air Flow Rate {m3/s}
+    0,                       !- Evaporative Condenser Pump Rated Power Consumption {W}
+    ,                        !- Supply Water Storage Tank Name
+    0,                       !- Basin Heater Capacity {W/K}
+    ,                        !- Basin Heater Setpoint Temperature {C}
+    ,                        !- Basin Heater Operating Schedule Name
+    Electric;                !- Fuel Type
+
+    
+  ZoneTerminalUnitList,
+    *TERMINAL UNIT AA* List;   !- Zone Terminal Unit List Name
+!    TU3,                     !- Zone Terminal Unit Name 1
+!    TU4,                     !- Zone Terminal Unit Name 2
+!    TU1,                     !- Zone Terminal Unit Name 3
+!    TU2,                     !- Zone Terminal Unit Name 4
+!    TU5;                     !- Zone Terminal Unit Name 5
+   
+  
+ OutdoorAir:NodeList,	!
+	*TERMINAL UNIT AA* Outdoor Air N List;	!- Node or NodeList Name 1
