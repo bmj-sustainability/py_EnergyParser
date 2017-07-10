@@ -167,7 +167,7 @@ def iter_islast(iterable):
 
 
 
-def applyTemplateNewStyle(IDFobj, templateDescriptions, templatesList):
+def OLD_applyTemplateNewStyle(IDFobj, templateDescriptions, templatesList):
     templateDescName = templateDescriptions[0]
     accrossDescZones = templateDescriptions[1]
     
@@ -196,5 +196,144 @@ def applyTemplateNewStyle(IDFobj, templateDescriptions, templatesList):
                 raise "Template style not correct"
 
     if not flagFound: 
-        print templateDescName, template.ID
+        print(templateDescName, template.ID)
         raise NameError('Template \'{0}\' does not exist in currently loaded templates'.format(templateDescName))
+
+
+
+def OLD_loadTemplates(templateDir):
+    
+    logging.debug("Loading templates from {0}".format(templateDir))
+    
+    #endCol = 1000
+    #endRow = 1000           
+
+    # Attach the excel COM object
+    #xl = Dispatch('Excel.Application')
+
+    # Open the input file
+    #book = xl.Workbooks.Open(inputExcelPath)
+    
+    # Select the sheet
+    #sheet = book.Sheets('Templates')
+
+#    globalTemplatePath = sheet.Cells(1,2).Value
+#    globalTemplatePath = os.path.normpath(globalTemplatePath)
+    
+    # Get the markers, place into a dictionary
+    markerRow = 2
+    markers = {}    
+    for col in range(1,endCol):
+        thisValue = sheet.Cells(markerRow,col).Value
+        if thisValue != None:
+            markers[str(thisValue)] = col -1
+            #print thisValue
+        #print markers
+    
+    # Could replace this whole section with xlrd module
+    # But using COM is more fun!
+    #templateArray = list()
+    templatesList = list()
+
+    # Loop through the templates
+    for row in range(4,endRow):
+        #thisTemplateID = sheet.Cells(row,1).Value
+        # Found a template row
+        if sheet.Cells(row,1).Value != None:
+            # Start a list for this tempate
+            #print thisTemplateID,
+            # Now run over this row
+            ID = sheet.Cells(row,1).Value
+            relativePath = sheet.Cells(row,2).Value
+            absolutePath = os.path.join(templatesFileDirStem,relativePath)
+            absolutePath = os.path.normpath(absolutePath)
+            templateStyle = sheet.Cells(row,3).Value
+            multiplyClass = sheet.Cells(row,4).Value
+            zoneNamePointer = sheet.Cells(row,5).Value
+            
+            namingList = list()
+            for col in range(markers['Naming']+1,markers['Pointers']+1):
+                thisValue = sheet.Cells(row,col).Value
+                if thisValue != None:
+                    namingList.append(str(thisValue))
+                    
+            pointerList = list()
+            for col in range(markers['Pointers'],markers['End']+1):
+                thisValue = sheet.Cells(row,col).Value
+                if thisValue != None:
+                    pointerList.append(str(thisValue))
+                                   
+            if templateStyle == "One":
+                templatesList.append(SingularTemplate(ID, absolutePath, templateStyle, multiplyClass,zoneNamePointer))
+            elif templateStyle == "N to N":
+                templatesList.append(N2N_Template(ID, absolutePath, templateStyle, multiplyClass,zoneNamePointer))
+            elif templateStyle == "Named N to N":
+                templatesList.append(NamedN2N_Template(ID, absolutePath, templateStyle, multiplyClass,zoneNamePointer,namingList))
+
+
+            #templateArray.append(templateList)
+    
+#    book.Close(SaveChanges=0) #to avoid prompt
+#    xl.Application.Quit()
+
+    book.Close(False)
+    xl.Application.Quit()
+    
+    # Split up the list into seperate lists
+#    for templateList in templateArray:
+#        #generalList = templateList[0:markers['Naming']]
+#        namingList = templateList[markers['Naming']:markers['Pointers']]
+#        pointerList =  templateList[markers['Pointers']:-1]
+#        #print generalList,namingList,pointerList
+#        
+#        templateStyle = generalList[2]
+#        
+#        if templateStyle == "One":
+#            templatesList.append(SingularTemplate(generalList))
+#        elif templateStyle == "N to N":
+#            templatesList.append(N2N_Template(generalList))
+#        elif templateStyle == "Named N to N":
+#            templatesList.append(NamedN2N_Template(generalList,namingList,pointerList))
+
+            
+    return templatesList
+
+
+
+
+
+def OLD_getTemplates(templatePath, filterRegExString = ".", flgExact = True):
+    raise
+    # Used to be a method on IDF class
+    # This is just a filter for file names now...
+    """Given a path, return a list of matching IDF files, and load into IDF objects
+    """ 
+
+    templates = list()
+    if flgExact:
+        filterRegExString= "^" + filterRegExString + "$"
+
+    with loggerCritical():
+        for path in get_files_by_ext_recurse(templatePath, "idf"):
+            base=os.path.basename(path)
+            fileName = os.path.splitext(base)[0]
+            if  re.search(filterRegExString,fileName):
+                #print path
+                template=IDF.fromIdfFile(path,fileName)
+                #template.getTemplateInfo()
+                templates.append(template)
+    
+    # No duplicates!
+    assert(len(templates) == len(set(templates)))
+    assert len(templates)
+    
+#    assert(len(thisTemplate) == 1), "Template; {} found {} matches {}".format(templateDef['templateName'],
+#                    len(thisTemplate),thisTemplate)
+#    thisTemplate = thisTemplate[0]    
+        
+    
+    logging.debug("Found {} templates in {} filtered {}".format(len(templates),IDF_TEMPLATE_PATH, filterRegExString))
+    
+    return templates
+
+
