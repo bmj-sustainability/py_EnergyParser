@@ -35,14 +35,6 @@ pPrint = pp.pprint
 
 log = logging.getLogger(__name__)
 
-class loggerCritical:
-    def __enter__(self):
-        myLogger = logging.getLogger()
-        myLogger.setLevel("CRITICAL")
-    def __exit__(self, type, value, traceback):
-        myLogger = logging.getLogger()
-        myLogger.setLevel("DEBUG")
-
 #--- Utilities 
 def root_node():
     """Start the XML tree with a root node

@@ -22,9 +22,7 @@ import re
 import logging
 
 #--- Utilities
-from utilities_base import *
-#gen_ID as gen_ID
-#from utilities_base import idStr, root_node
+from utilities_idf import idStr, root_node, gen_ID
 
 #--- Third party
 from lxml import etree
