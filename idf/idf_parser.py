@@ -136,6 +136,8 @@ class IDF(object):
         return thisClass
 
     #--- Introspection
+    #--- Introspection
+    
     def __str__(self):
         return "IDF:{}, IDF Lines:{}, XML Objects:{}, XML_root:{}".format(
                              self.ID,
@@ -167,8 +169,15 @@ class IDF(object):
             print(self.templateDef)
         except:
             raise Exception("Template not defined")
+    
+    def list_classes(self):
+        if self.XML is not None:
+            objects = self.XML.xpath('OBJECT')
+            return(objects)
+        else:
+            return 0 
         
-        
+
     #--- Load data
     def load_XML(self, XMLpath):
         # Load XML from file on disk
