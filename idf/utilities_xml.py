@@ -86,6 +86,7 @@ def get_ATTR_position(IDDobj, className, XMLattribName, XMLattribValue):
 def tree_get_class(idf_obj, classNameRegex, flgExact = True):
     """Returns a list of XML OBJECT nodes according to search of class name
     """
+    
     IDFtree = idf_obj.XML
     #assert(isinstance(IDFtree,etree._ElementTree)), "Expected etree._Element, got {}".format(type(IDFtree))
     if flgExact:
@@ -396,8 +397,8 @@ def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No
         objectParent = thisClass.xpath("..")[0]
         # Inspect the DEFINITION of this thisClass
         objectClassName =  thisClass.text
-        with loggerCritical():
-            classDef = tree_get_class(IDDobj.XML, objectClassName)
+        with LoggerCritical():
+            classDef = tree_get_class(IDDobj, objectClassName)
         assert len(classDef) >= 1, "Couldn't any {} in IDD".format(objectClassName)
         assert len(classDef) == 1, "Found {} in IDD {} times".format(objectClassName,len(classDef))
         classDef = classDef[0]
