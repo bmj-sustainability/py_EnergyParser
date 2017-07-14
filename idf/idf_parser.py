@@ -603,10 +603,12 @@ class IDF(object):
 
         self.pathXmlOutput = pathXmlOutput
 
-        fOut = open(self.pathXmlOutput, 'w')
+        fOut = open(self.pathXmlOutput, 'wb')
 
-        resultXML = (etree.tostring(self.XML, pretty_print=True))
-
+        resultXML = etree.tostring(self.XML, pretty_print=True,encoding='UTF-8')
+        #print(resultXML)
+        #raise
+        #print(type(resultXML))
         fOut.write(resultXML)
         fOut.close
         
