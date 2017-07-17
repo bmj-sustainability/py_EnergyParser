@@ -144,6 +144,7 @@ def get_table_object_count(IDFobj):
 def print_table(rows, num_rows=None):
     """Pretty print a table
     """
+    raise
     headers = rows.pop(0)
     alignments = rows.pop(0)
     alignments = list(zip(headers, alignments))
@@ -321,15 +322,15 @@ def apply_default_construction_names(IDFobj, IDDobj):
 
 
 def apply_change(IDFobj, IDDobj, change):
-    with loggerCritical():
+    with LoggerCritical():
         targetSelection = tree_get_class(IDDobj, change['class'], False)
     assert targetSelection
     
-    with loggerCritical():
+    with LoggerCritical():
         position = get_IDD_matched_position(targetSelection[0],"field",change['attr'])
     assert position
     
-    with loggerCritical():
+    with LoggerCritical():
         targetSelection = tree_get_class(IDFobj, change['class'], False)
     
     # Match the NAME
@@ -612,8 +613,8 @@ def delete_classes_from_excel(IDFobj, IDDobj, delete):
     logging.debug(idStr("Deleting: {}".format(delete),IDFobj.ID))
     #[{'class': u'TestClass', 'Name': u'TestName'}]
     #raise
-    with loggerCritical():
-        targetSelection = tree_get_class(IDDobj.XML, delete['class'], True)
+    with LoggerCritical():
+        targetSelection = tree_get_class(IDDobj, delete['class'], True)
         #printXML(targetSelection[0])
     assert targetSelection
     #"Name"
@@ -622,8 +623,8 @@ def delete_classes_from_excel(IDFobj, IDDobj, delete):
     #    
     #assert position
     
-    with loggerCritical():
-        targetSelection = tree_get_class(IDFobj.XML, delete['class'], True)
+    with LoggerCritical():
+        targetSelection = tree_get_class(IDFobj, delete['class'], True)
     
     # Match the NAME
     if len(targetSelection) > 1:
