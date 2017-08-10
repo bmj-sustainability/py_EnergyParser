@@ -217,7 +217,7 @@ def prettyPrint(string, maxlen=75, split=' '):
 def get_zone_name_list(IDFobj, zoneName='.'):
     """ Return a list of zone names in the IDF object
     """
-    with loggerCritical():
+    with LoggerCritical():
         zoneElements = tree_get_class(IDFobj, "^Zone$")
     
     names = list()
@@ -382,6 +382,11 @@ def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No
     """
     logging.debug(idStr("Processing template *** {} ***: {}".format(templateName,IDFtemplate),IDFobj.ID)) 
     
+    #TODO: For some reason, the template IDF object is losing it's XML parse, so it has to be re-parsed!
+    IDFtemplate.parse_IDF_to_XML()
+    #print(IDFtemplate)
+    
+    
     # Loop over each class of the template
     objectCnt = 0
     
@@ -389,7 +394,7 @@ def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No
     
     #replacement = random.randint(0, 1000000)
     #replacement = "{}".format(replacement)
-    xml_ATTR_text_replace(allObjsList, "*SYSTEM NUMBER*",  uniqueName)
+    #xml_ATTR_text_replace(allObjsList, "*SYSTEM NUMBER*",  uniqueName)
     #print allObjsList
     
     #raise 
@@ -429,7 +434,7 @@ def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No
             #raise 
             
             #raise
-            with loggerCritical():
+            with LoggerCritical():
                 try:
                     position = get_IDD_matched_position(classDef,"object-list","ZoneNames")
                 except:
