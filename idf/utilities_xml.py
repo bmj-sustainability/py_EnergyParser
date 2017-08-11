@@ -32,14 +32,14 @@ import os
 
 #--- Utilities
 #from utility_print_table import PrettyTable
-from utility_logger import LoggerCritical
-from utilities_idf import force_list, xpathRE, clean_newlines, root_node, idStr
+from ExergyUtilities.utility_logger import LoggerCritical
+from .utilities_idf import force_list, xpathRE, clean_newlines, root_node, idStr
 
 #--- Third party
 from lxml import etree
 
 #--- Mine
-from idf_parser import IDF
+from .idf_parser import IDF
 
 
 
