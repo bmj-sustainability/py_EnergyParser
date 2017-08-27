@@ -322,6 +322,7 @@ def apply_default_construction_names(IDFobj, IDDobj):
 
 
 def apply_change(IDFobj, IDDobj, change):
+  
     with LoggerCritical():
         targetSelection = tree_get_class(IDDobj, change['class'], False)
     assert targetSelection
@@ -331,9 +332,11 @@ def apply_change(IDFobj, IDDobj, change):
     assert position
     
     with LoggerCritical():
+        # The target can be multiple objects
         targetSelection = tree_get_class(IDFobj, change['class'], False)
-    
+        
     # Match the NAME
+    # If multiple objects
     if len(targetSelection) > 1:
         filteredSelection = list()
         
@@ -359,11 +362,13 @@ def apply_change(IDFobj, IDDobj, change):
                                                                     change['attr'],
                                                                     change["objName"]
                                                                     )
-    
+        
     numChanges = 0
     for thisClass in targetSelection:
+        print(targetSelection)
+        
         targetAttr = thisClass.xpath("ATTR[{}]".format(position))
-        assert targetAttr
+        assert targetAttr, "Couldn't find attribute while working on: {}".format(change)
         
         targetAttr = targetAttr[0]
         if not isinstance(change['newVal'],str):
