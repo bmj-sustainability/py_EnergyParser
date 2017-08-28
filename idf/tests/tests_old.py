@@ -15,7 +15,7 @@ from ExergyUtilities.utility_inspect import get_self
 # Testing imports
 #from ..IDF import IDF
 import idf.idf_parser as idf
-from idf.utilities_xml import printXML
+from idf.utilities_idf_xml import printXML
 from UtilityLogger import loggerCritical
 
 #get_table_all_names
