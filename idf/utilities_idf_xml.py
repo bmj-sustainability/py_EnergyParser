@@ -409,9 +409,13 @@ def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No
     If found, this object is multiplied over zones matched (regexp)
     """
     logging.debug(idStr("Processing template *** {} ***: {}".format(templateName,IDFtemplate),IDFobj.ID)) 
-    
+    if zoneNames == 'DO NOT MULTIPLY':
+        logging.debug(idStr("\tNOTE: This template is NOT multiplied over zones!".format(),IDFobj.ID))
+        
     #TODO: For some reason, the template IDF object is losing it's XML parse, so it has to be re-parsed!
     IDFtemplate.parse_IDF_to_XML()
+    
+    
     #print(IDFtemplate)
     
     # Loop over each class of the template
@@ -438,23 +442,7 @@ def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No
         
         # Check the IDD for reference to zone name or zone lists
         # This thisClass is multiplied over zones! 
-#         if (
-#             (
-#              flag_IDD_match_field(classDef,"object-list","ZoneNames") 
-#              or 
-#              flag_IDD_match_field(classDef,"object-list","ZoneAndZoneListNames")
-#              ) 
-#                 and   
-#             (
-#              flag_IDD_match_field(classDef,"field","Zone Name")
-#              or
-#              flag_IDD_match_field(classDef,"field","Zone or ZoneList Name") 
-#              )
-#             
-#             and
-#             (objectClassName not in ("Pump:VariableSpeed","WaterUse:Equipment"))
-#             ):
-        if flag_zone_multiplied_class(classDef,objectClassName):
+        if flag_zone_multiplied_class(classDef,objectClassName) and zoneNames != 'DO NOT MULTIPLY':
             # Get the position of the zone name from IDD
             with LoggerCritical():
                 try:
