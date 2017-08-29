@@ -381,6 +381,27 @@ def apply_change(IDFobj, IDDobj, change):
     return IDFobj
 
 
+def flag_zone_multiplied_class(classDef,objectClassName):
+    if (
+        (
+         flag_IDD_match_field(classDef,"object-list","ZoneNames") 
+         or 
+         flag_IDD_match_field(classDef,"object-list","ZoneAndZoneListNames")
+         ) 
+            and   
+        (
+         flag_IDD_match_field(classDef,"field","Zone Name")
+         or
+         flag_IDD_match_field(classDef,"field","Zone or ZoneList Name") 
+         )
+        
+        and
+        (objectClassName not in ("Pump:VariableSpeed","WaterUse:Equipment"))
+        ):    
+        return True
+    else:
+        return False
+
 def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No name", uniqueName = None):
     """ Template is a regular IDF object
     Function checks if any of the objects in the template need to be applied over (reference) multiple zones
@@ -417,23 +438,23 @@ def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No
         
         # Check the IDD for reference to zone name or zone lists
         # This thisClass is multiplied over zones! 
-        if (
-            (
-             flag_IDD_match_field(classDef,"object-list","ZoneNames") 
-             or 
-             flag_IDD_match_field(classDef,"object-list","ZoneAndZoneListNames")
-             ) 
-                and   
-            (
-             flag_IDD_match_field(classDef,"field","Zone Name")
-             or
-             flag_IDD_match_field(classDef,"field","Zone or ZoneList Name") 
-             )
-            
-            and
-            (objectClassName not in ("Pump:VariableSpeed","WaterUse:Equipment"))
-            ):
-            
+#         if (
+#             (
+#              flag_IDD_match_field(classDef,"object-list","ZoneNames") 
+#              or 
+#              flag_IDD_match_field(classDef,"object-list","ZoneAndZoneListNames")
+#              ) 
+#                 and   
+#             (
+#              flag_IDD_match_field(classDef,"field","Zone Name")
+#              or
+#              flag_IDD_match_field(classDef,"field","Zone or ZoneList Name") 
+#              )
+#             
+#             and
+#             (objectClassName not in ("Pump:VariableSpeed","WaterUse:Equipment"))
+#             ):
+        if flag_zone_multiplied_class(classDef,objectClassName):
             # Get the position of the zone name from IDD
             with LoggerCritical():
                 try:
