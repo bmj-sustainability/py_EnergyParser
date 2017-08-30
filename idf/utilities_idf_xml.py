@@ -29,6 +29,7 @@ import re
 from collections import defaultdict # Python 2.7 has a better 'Counter'
 from copy import deepcopy
 import os
+from pprint import pprint
 
 #--- Utilities
 #from utility_print_table import PrettyTable
@@ -408,9 +409,11 @@ def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No
     Check is by checking IDD for ZoneName attribute fields
     If found, this object is multiplied over zones matched (regexp)
     """
-    logging.debug(idStr("Processing template *** {} ***: {}".format(templateName,IDFtemplate),IDFobj.ID)) 
+    logging.debug(idStr("Processing template *** {} ***: {}".format(templateName,IDFtemplate),IDFobj.ID))
+    flg_do_not_multiply = False 
     if zoneNames == 'DO NOT MULTIPLY':
         logging.debug(idStr("\tNOTE: This template is NOT multiplied over zones!".format(),IDFobj.ID))
+        flg_do_not_multiply = True
         
     #TODO: For some reason, the template IDF object is losing it's XML parse, so it has to be re-parsed!
     IDFtemplate.parse_IDF_to_XML()
@@ -442,7 +445,7 @@ def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No
         
         # Check the IDD for reference to zone name or zone lists
         # This thisClass is multiplied over zones! 
-        if flag_zone_multiplied_class(classDef,objectClassName) and zoneNames != 'DO NOT MULTIPLY':
+        if flag_zone_multiplied_class(classDef,objectClassName) and not flg_do_not_multiply:
             # Get the position of the zone name from IDD
             with LoggerCritical():
                 try:
@@ -578,11 +581,22 @@ def clean_out_object(IDFobj,keptClassNames, flgExact = True):
     # First column is names
     currentClasses = set([item[0] for item in objectTable])
     # List comprehension to create set
+    #print("CURRENT")
+    #pprint(currentClasses)
+    #print('DesignSpecification:OutdoorAir' in currentClasses)
+    #print('DesignSpecification:OutdoorAir' in keptClassNames)
+    #print(len(keptClassNames))
+
+    
     deletedClasses = currentClasses - set(keptClassNames)
+    #print("KEPT")
+    #pprint(keptClassNames)
     
     myLogger = logging.getLogger()
     myLogger.setLevel("CRITICAL")
-    
+    #print("DELETED")
+    #pprint(deletedClasses)
+
     IDFobj = delete_classes(IDFobj,list(deletedClasses),flgExact)
     
     myLogger.setLevel("DEBUG")

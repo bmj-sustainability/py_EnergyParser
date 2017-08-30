@@ -129,6 +129,87 @@ kept_classes_dict =  {
                           #'ZoneHVAC:EquipmentConnections',
                           
                           ]),  
+
+        'noHVAC_LIDL_Baseline': set([   
+                          # Control ##################
+                          'Version',
+                          'SimulationControl',
+                          'Building',
+                          'ShadowCalculation',
+                          'Site:Location',
+                          'SizingPeriod:DesignDay',
+                          'RunPeriod',
+                          'RunPeriodControl:DaylightSavingTime',
+                          'Site:GroundTemperature:BuildingSurface',
+                          'Site:GroundTemperature:BuildingSurface',
+                          'Site:GroundTemperature:Deep',
+                          'Site:GroundTemperature:Shallow',
+                          'Site:GroundReflectance',
+                          'Site:GroundReflectance:SnowModifier',                          
+                          
+                          # Schedules #################
+                          'ScheduleTypeLimits',
+                          'Schedule:Day:Hourly',
+                          'Schedule:Week:Daily',
+                          'Schedule:Compact',
+               
+                           # Surface Construction Elements ##################
+                          'Material',
+                          'Material:NoMass',
+                          'Material:InfraredTransparent',
+                          'Material:AirGap',
+                          'WindowMaterial:Glazing',
+                          'WindowMaterial:Gas', 
+                          'WindowMaterial:SimpleGlazingSystem',
+                          'WindowMaterial:Shade',
+                          'MaterialProperty:GlazingSpectralData',
+                          'Construction',
+                          
+                          # Surfaces
+                          'Zone',
+                          'BuildingSurface:Detailed',                            
+                          'FenestrationSurface:Detailed',
+                          'GlobalGeometryRules',
+                          'WindowProperty:ShadingControl',
+                          'WindowProperty:FrameAndDivider',
+                          'Shading:Building:Detailed',
+                          
+                          # Advaced Surfaces
+                          'SurfaceProperty:OtherSideCoefficients',
+                          
+                          # Loads ######################
+                          'People',
+                          'Lights',
+                          'ElectricEquipment',          
+                          'ZoneInfiltration:DesignFlowRate',
+                        
+                          # Daylighting
+                          'Daylighting:Controls',
+                          'OutputControl:IlluminanceMap:Style'
+                          
+                          # Zone Airflow
+                          #'ZoneInfiltration:DesignFlowRate',
+                          
+                          # HVAC Design Objects
+                          #'DesignSpecification:OutdoorAir',
+                          #'DesignSpecification:ZoneAirDistribution',
+                          #'Sizing:Zone',
+                          'Sizing:System',
+                          'Sizing:Plant',
+                          
+                          # Zone HVAC Controls and Thermostats
+                          #'ZoneControl:Humidistat',
+                          #'ZoneControl:Thermostat',
+                          #'ZoneControl:Thermostat:OperativeTemperature',
+                          #'ThermostatSetpoint:DualSetpoint',
+                          
+                          
+                          # HVAC
+                          #'ZoneHVAC:EquipmentConnections',
+                          
+                          ]),  
+                      
+                      
         'geometryAndHVAC_LIDL_Proposed': set([
                           # Control ##################
                           'Version',
@@ -184,7 +265,7 @@ kept_classes_dict =  {
                         
                           # Daylighting
                           'Daylighting:Controls',
-                          'OutputControl:IlluminanceMap:Style'
+                          'OutputControl:IlluminanceMap:Style',
                           
                           # Zone Airflow
                           #'ZoneInfiltration:DesignFlowRate',
@@ -235,7 +316,7 @@ kept_classes_dict =  {
 
                           
                           # Air Distribution
-                          'AirLoopHVAC'
+                          'AirLoopHVAC',
                           'AirLoopHVAC:OutdoorAirSystem:EquipmentList',
                           'AirLoopHVAC:OutdoorAirSystem',
                           'OutdoorAir:Mixer',
