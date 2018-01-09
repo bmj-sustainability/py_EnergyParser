@@ -46,7 +46,7 @@ def printTable(names, rows):
         myTable.add_row(row)
     
     
-    print(myTable)         
+    print(myTable)
 class PrettyTable:
 
     def __init__(self, fields=None, caching=True, padding_width=1, left_padding=None, right_padding=None):

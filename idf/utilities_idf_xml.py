@@ -29,17 +29,18 @@ import re
 from collections import defaultdict # Python 2.7 has a better 'Counter'
 from copy import deepcopy
 import os
+from pprint import pprint
 
 #--- Utilities
 #from utility_print_table import PrettyTable
-from utility_logger import LoggerCritical
-from utilities_idf import force_list, xpathRE, clean_newlines, root_node, idStr
+from ExergyUtilities.utility_logger import LoggerCritical
+from .utilities_idf import force_list, xpathRE, clean_newlines, root_node, idStr
 
 #--- Third party
 from lxml import etree
 
 #--- Mine
-from idf_parser import IDF
+from .idf_parser import IDF
 
 
 
@@ -226,10 +227,10 @@ def get_zone_name_list(IDFobj, zoneName='.'):
         name = nameXml[0].text # It's the first ATTR
         names.append(name)
     
+    # Regexp search the zone names and filter for matches
     filteredNameList = [name for name in names if re.search(zoneName, name)]
     
     return filteredNameList
-
 
 
 #--- Assembly
@@ -322,6 +323,7 @@ def apply_default_construction_names(IDFobj, IDDobj):
 
 
 def apply_change(IDFobj, IDDobj, change):
+  
     with LoggerCritical():
         targetSelection = tree_get_class(IDDobj, change['class'], False)
     assert targetSelection
@@ -331,9 +333,11 @@ def apply_change(IDFobj, IDDobj, change):
     assert position
     
     with LoggerCritical():
+        # The target can be multiple objects
         targetSelection = tree_get_class(IDFobj, change['class'], False)
-    
+        
     # Match the NAME
+    # If multiple objects
     if len(targetSelection) > 1:
         filteredSelection = list()
         
@@ -359,11 +363,12 @@ def apply_change(IDFobj, IDDobj, change):
                                                                     change['attr'],
                                                                     change["objName"]
                                                                     )
-    
+        
     numChanges = 0
     for thisClass in targetSelection:
+       
         targetAttr = thisClass.xpath("ATTR[{}]".format(position))
-        assert targetAttr
+        assert targetAttr, "Couldn't find attribute while working on: {}".format(change)
         
         targetAttr = targetAttr[0]
         if not isinstance(change['newVal'],str):
@@ -372,20 +377,49 @@ def apply_change(IDFobj, IDDobj, change):
         numChanges += 1
         
     
-    logging.debug(idStr("Applied change {} times: \n{} ".format(numChanges,change,),IDFobj.ID))
+    logging.debug(idStr("Applied change {} times: {}".format(numChanges,change,),IDFobj.ID))
     
     return IDFobj
 
 
+def flag_zone_multiplied_class(classDef,objectClassName):
+    if (
+        (
+         flag_IDD_match_field(classDef,"object-list","ZoneNames") 
+         or 
+         flag_IDD_match_field(classDef,"object-list","ZoneAndZoneListNames")
+         ) 
+            and   
+        (
+         flag_IDD_match_field(classDef,"field","Zone Name")
+         or
+         flag_IDD_match_field(classDef,"field","Zone or ZoneList Name") 
+         )
+        
+        and
+        (objectClassName not in ("Pump:VariableSpeed","WaterUse:Equipment"))
+        ):    
+        return True
+    else:
+        return False
+
 def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No name", uniqueName = None):
     """ Template is a regular IDF object
+    Function checks if any of the objects in the template need to be applied over (reference) multiple zones
+    Check is by checking IDD for ZoneName attribute fields
+    If found, this object is multiplied over zones matched (regexp)
     """
-    logging.debug(idStr("Processing template *** {} ***: {}".format(templateName,IDFtemplate),IDFobj.ID)) 
-    
+    logging.debug(idStr("Processing template *** {} ***: {}".format(templateName,IDFtemplate),IDFobj.ID))
+    flg_do_not_multiply = False 
+    if zoneNames == 'DO NOT MULTIPLY':
+        logging.debug(idStr("\tNOTE: This template is NOT multiplied over zones!".format(),IDFobj.ID))
+        flg_do_not_multiply = True
+        
     #TODO: For some reason, the template IDF object is losing it's XML parse, so it has to be re-parsed!
     IDFtemplate.parse_IDF_to_XML()
-    #print(IDFtemplate)
     
+    
+    #print(IDFtemplate)
     
     # Loop over each class of the template
     objectCnt = 0
@@ -408,62 +442,35 @@ def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No
         assert len(classDef) >= 1, "Couldn't any {} in IDD".format(objectClassName)
         assert len(classDef) == 1, "Found {} in IDD {} times".format(objectClassName,len(classDef))
         classDef = classDef[0]
-
+        
+        # Check the IDD for reference to zone name or zone lists
         # This thisClass is multiplied over zones! 
-        if (
-            (
-             flag_IDD_match_field(classDef,"object-list","ZoneNames") 
-             or 
-             flag_IDD_match_field(classDef,"object-list","ZoneAndZoneListNames")
-             ) 
-                and   
-            (
-             flag_IDD_match_field(classDef,"field","Zone Name")
-             or
-             flag_IDD_match_field(classDef,"field","Zone or ZoneList Name") 
-             )
-            
-            and
-            (objectClassName not in ("Pump:VariableSpeed","WaterUse:Equipment"))
-            ):
-            # Get the position of the zone name
-            
-            #print objectClassName, 
-            #(objectClassName not in ["Pump:VariableSpeed",])
-            
-            #raise 
-            
-            #raise
+        if flag_zone_multiplied_class(classDef,objectClassName) and not flg_do_not_multiply:
+            # Get the position of the zone name from IDD
             with LoggerCritical():
                 try:
                     position = get_IDD_matched_position(classDef,"object-list","ZoneNames")
                 except:
                     position = get_IDD_matched_position(classDef,"object-list","ZoneAndZoneListNames")
-
-            #print position
+                    
             if flag_IDD_match_field(classDef,"field","Name"):
                 # Get the position of the zone name
-                with loggerCritical():
+                with LoggerCritical():
                     namePosition = get_IDD_matched_position(classDef,"field","Name")
             else:
                 namePosition = -1
-            #print flag_IDD_match_field(classDef,"field","Name")
-            #print namePosition
-            #raise
+
             # Loop over zones            
             for zoneName in get_zone_name_list(IDFobj,zoneNames):
-                #print zoneName
                 thisMultiplyObject = deepcopy(objectParent)
                 
                 if namePosition != -1:
                     uniqueNameAttr = thisMultiplyObject.xpath("//ATTR[{}]".format(int(namePosition)))
                     uniqueNameAttr[0].text = uniqueNameAttr[0].text + zoneName
-                #print namePosition
                 #xml_ATTR_text_replace([thisMultiplyObject], r"\*ZONENAME\*",zoneName)
                 
                 # Update pointer to zone name
                 targetNameAttr = thisMultiplyObject.xpath("//ATTR[{}]".format(int(position)))
-                #printXML(targetNameAttr[0])
                 try:
                     targetNameAttr[0].text = zoneName
                 except:
@@ -473,24 +480,19 @@ def apply_template(IDFobj,IDDobj,IDFtemplate,zoneNames = ".", templateName = "No
                     print("namePosition: {}".format(namePosition))
                     printXML(classDef)
                     raise
-                #print targetNameAttr[0].text
-                #printXML(thisMultiplyObject)
                 IDFobj.XML.append(thisMultiplyObject)
                 #logging.debug(idStr("Zonename updated, position {}".format(int(position)),IDFobj.ID))
 
             logging.debug(idStr("\tMerged {} into {} over {} zones matching '{}'".format(objectClassName, IDFobj.ID, len(get_zone_name_list(IDFobj)),zoneNames),IDFobj.ID))
 
-        # Otherwise, just merge_xml it straight in
+        # Otherwise, just merge_xml straight in
         else:
-            
             # BUT: Check for any possible unique names
             IDFobj.XML.append(objectParent)
             objectCnt += 1
             
     logging.debug(idStr("\tMerged {} static objects from {}".format(objectCnt, templateName, IDFobj.ID,),IDFobj.ID)) 
     return IDFobj
-
-
 
 def flag_IDD_match_field(IDDclass, label, value):
     #printXML(IDDclass)
@@ -576,13 +578,25 @@ def clean_out_object(IDFobj,keptClassNames, flgExact = True):
     
     #print objectTable
     objectTable.pop(0) # Eject the header
+    # First column is names
     currentClasses = set([item[0] for item in objectTable])
     # List comprehension to create set
+    #print("CURRENT")
+    #pprint(currentClasses)
+    #print('DesignSpecification:OutdoorAir' in currentClasses)
+    #print('DesignSpecification:OutdoorAir' in keptClassNames)
+    #print(len(keptClassNames))
+
+    
     deletedClasses = currentClasses - set(keptClassNames)
+    #print("KEPT")
+    #pprint(keptClassNames)
     
     myLogger = logging.getLogger()
     myLogger.setLevel("CRITICAL")
-    
+    #print("DELETED")
+    #pprint(deletedClasses)
+
     IDFobj = delete_classes(IDFobj,list(deletedClasses),flgExact)
     
     myLogger.setLevel("DEBUG")
@@ -621,7 +635,10 @@ def delete_classes_from_excel(IDFobj, IDDobj, delete):
     with LoggerCritical():
         targetSelection = tree_get_class(IDDobj, delete['class'], True)
         #printXML(targetSelection[0])
-    assert targetSelection
+    
+    if not targetSelection: 
+        logging.error("Can't find {} class in IDD! Continuing anyways...".format(delete['class']))
+    #assert targetSelection, "Can't find {}".format(delete['class'])
     #"Name"
     #with loggerCritical():
     #    position = get_IDD_matched_position(targetSelection[0],"field",change['attr'])
